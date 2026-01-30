@@ -1,0 +1,16 @@
+{
+    "name": "practica/restaurante",
+    "description": "Demo de reservas de restaurante...",
+    "type": "project",
+    "require": {
+        "jenssegers/blade": "^1.4",
+        "illuminate/view": "^8.0",
+        "illuminate/events": "^8.0",
+        "illuminate/filesystem": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Practica\\Restaurante\\": "src/"
+        }
+    }
+}
