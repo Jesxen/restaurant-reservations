@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MesaFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Mesa extends Model
 {
-    /** @use HasFactory<\Database\Factories\MesaFactory> */
+    /** @use HasFactory<MesaFactory> */
     use HasFactory;
 
     protected $fillable = ['numero', 'capacidad', 'activa'];

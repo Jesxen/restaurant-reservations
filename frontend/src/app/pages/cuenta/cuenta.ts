@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgClass } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -9,20 +9,48 @@ import { AuthService } from '../../core/auth.service';
 import { ApiValidationError, EstadoReserva, Reserva } from '../../core/reserva.model';
 import { ESTADO_BADGE, ESTADO_LABEL } from '../../core/estado.util';
 import { SlotPicker } from '../../shared/slot-picker';
+import { ReviewService } from '../../core/review.service';
+import { WaitlistService } from '../../core/waitlist.service';
+import { WaitlistEntry } from '../../core/waitlist.model';
+import { I18nService } from '../../core/i18n.service';
+import { TranslatePipe } from '../../core/translate.pipe';
 
 @Component({
   selector: 'app-cuenta',
-  imports: [RouterLink, NgClass, ReactiveFormsModule, SlotPicker],
+  imports: [RouterLink, NgClass, ReactiveFormsModule, SlotPicker, TranslatePipe],
   templateUrl: './cuenta.html',
 })
 export class Cuenta implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly reservaService = inject(ReservaService);
+  private readonly reviewService = inject(ReviewService);
+  private readonly waitlistService = inject(WaitlistService);
   protected readonly auth = inject(AuthService);
+  protected readonly i18n = inject(I18nService);
 
   protected readonly reservas = signal<Reserva[]>([]);
   protected readonly loading = signal(true);
   protected readonly canceling = signal<number | null>(null);
+
+  // --- Review form ---
+  protected readonly reviewSubmitting = signal(false);
+  protected readonly reviewDone = signal(false);
+  protected readonly reviewErrors = signal<Record<string, string[]>>({});
+  protected readonly reviewRating = signal(0);
+  protected readonly stars = [1, 2, 3, 4, 5];
+
+  protected readonly reviewForm = this.fb.nonNullable.group({
+    rating: [0, [Validators.required, Validators.min(1), Validators.max(5)]],
+    comentario: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(1000)]],
+  });
+
+  /** Eligible to review if there is at least one completed reservation. */
+  protected readonly canReview = computed(() =>
+    this.reservas().some((r) => r.estado === 'completada'),
+  );
+
+  // --- Waitlist entries ---
+  protected readonly esperas = signal<WaitlistEntry[]>([]);
 
   // --- Edit modal state ---
   protected readonly editing = signal<Reserva | null>(null);
@@ -50,6 +78,10 @@ export class Cuenta implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.waitlistService.mias().subscribe({
+      next: (data) => this.esperas.set(data),
+      error: () => this.esperas.set([]),
+    });
   }
 
   private load(): void {
@@ -60,6 +92,41 @@ export class Cuenta implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  // --- Review ---
+  protected setRating(value: number): void {
+    this.reviewRating.set(value);
+    this.reviewForm.controls.rating.setValue(value);
+    this.reviewForm.controls.rating.markAsTouched();
+  }
+
+  protected reviewErrorsFor(field: string): string[] {
+    return this.reviewErrors()[field] ?? [];
+  }
+
+  protected submitReview(): void {
+    this.reviewErrors.set({});
+    this.reviewDone.set(false);
+    if (this.reviewForm.invalid) {
+      this.reviewForm.markAllAsTouched();
+      return;
+    }
+    this.reviewSubmitting.set(true);
+    const { rating, comentario } = this.reviewForm.getRawValue();
+    this.reviewService.submit({ rating, comentario }).subscribe({
+      next: () => {
+        this.reviewSubmitting.set(false);
+        this.reviewDone.set(true);
+        this.reviewForm.reset({ rating: 0, comentario: '' });
+        this.reviewRating.set(0);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.reviewSubmitting.set(false);
+        const body = err.error as ApiValidationError | null;
+        this.reviewErrors.set(body?.errors ?? { general: ['No se pudo enviar la reseña.'] });
+      },
     });
   }
 

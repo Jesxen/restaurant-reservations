@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ContactoService } from '../../core/contacto.service';
 import { SettingsService, socialLinks } from '../../core/settings.service';
 import { ApiValidationError } from '../../core/reserva.model';
+import { TranslatePipe } from '../../core/translate.pipe';
 
 @Component({
   selector: 'app-contacto',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslatePipe],
   templateUrl: './contacto.html',
 })
 export class Contacto {

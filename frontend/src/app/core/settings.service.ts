@@ -47,6 +47,11 @@ export const DEFAULT_SETTINGS: Settings = {
     tiktok: null,
   },
   galeria: [],
+  deposito: {
+    activo: false,
+    por_persona: 0,
+    stripe_key: null,
+  },
 };
 
 @Injectable({ providedIn: 'root' })

@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Models\BlackoutDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\BlackoutDate */
+/** @mixin BlackoutDate */
 class BlackoutDateResource extends JsonResource
 {
     /**

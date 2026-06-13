@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Reserva;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\Reserva */
+/** @mixin Reserva */
 class ReservaResource extends JsonResource
 {
     /**
@@ -28,6 +29,10 @@ class ReservaResource extends JsonResource
             'mesa' => new MesaResource($this->whenLoaded('mesa')),
             'user_id' => $this->user_id,
             'cancelable' => $this->cancelable(),
+            'deposito' => [
+                'estado' => $this->deposito_estado,
+                'importe' => $this->deposito_importe !== null ? (float) $this->deposito_importe : null,
+            ],
             'eventos' => ReservaEventoResource::collection($this->whenLoaded('eventos')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

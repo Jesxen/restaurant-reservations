@@ -9,15 +9,30 @@ use App\Mail\NuevaReservaAdmin;
 use App\Mail\ReservaRecibida;
 use App\Models\Reserva;
 use App\Models\ReservaEvento;
+use App\Models\Setting;
+use App\Services\StripeService;
+use App\Services\WaitlistService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class ReservaController extends Controller
 {
+    public function __construct(
+        private readonly StripeService $stripe,
+        private readonly WaitlistService $waitlist,
+    ) {}
+
     /**
      * Store a new reservation (guest or authenticated client).
+     *
+     * When deposits are enabled (admin setting + Stripe configured) a
+     * PaymentIntent is created and its client_secret returned (additive field)
+     * so the frontend can confirm payment. When deposits are off OR Stripe is
+     * unconfigured, behaviour is identical to before.
      */
     public function store(StoreReservaRequest $request): JsonResponse
     {
@@ -32,7 +47,37 @@ class ReservaController extends Controller
         $data['user_id'] = $user?->id;
         $data['estado'] = 'pendiente';
 
+        $setting = Setting::current();
+        $cobrarDeposito = $setting->depositoActivo() && $this->stripe->isConfigured();
+
+        if ($cobrarDeposito) {
+            $data['deposito_estado'] = 'pendiente';
+            $data['deposito_importe'] = round($setting->depositoPorPersona() * (int) $data['personas'], 2);
+        } else {
+            // Set explicitly so the returned model reflects it without a refresh.
+            $data['deposito_estado'] = 'no_aplica';
+        }
+
         $reserva = Reserva::create($data);
+
+        // Attempt to create the Stripe PaymentIntent. If Stripe errors at this
+        // point, fall back to a no-deposit reservation rather than failing the
+        // whole booking.
+        $clientSecret = null;
+
+        if ($cobrarDeposito && $reserva->deposito_importe > 0) {
+            try {
+                $intent = $this->stripe->createDepositIntent($reserva, (float) $reserva->deposito_importe);
+                $reserva->update(['payment_intent_id' => $intent['id']]);
+                $clientSecret = $intent['client_secret'];
+            } catch (Throwable $e) {
+                Log::warning('No se pudo crear el PaymentIntent de Stripe; la reserva continúa sin depósito.', [
+                    'reserva_id' => $reserva->id,
+                    'error' => $e->getMessage(),
+                ]);
+                $reserva->update(['deposito_estado' => 'no_aplica', 'deposito_importe' => null]);
+            }
+        }
 
         // Confirmation to the customer.
         Mail::to($reserva->email)->send(new ReservaRecibida($reserva));
@@ -41,7 +86,12 @@ class ReservaController extends Controller
         Mail::to(config('mail.contact_to'))->send(new NuevaReservaAdmin($reserva));
 
         return (new ReservaResource($reserva))
-            ->additional(['message' => "¡Reserva recibida! Tu localizador es {$reserva->localizador}. Te confirmaremos en breve."])
+            ->additional([
+                'message' => "¡Reserva recibida! Tu localizador es {$reserva->localizador}. Te confirmaremos en breve.",
+                // Additive: null unless a deposit must be paid. The frontend
+                // uses this with Stripe.js to confirm the card payment.
+                'client_secret' => $clientSecret,
+            ])
             ->response()
             ->setStatusCode(201);
     }
@@ -105,6 +155,9 @@ class ReservaController extends Controller
         $this->authorize('cancel', $reserva);
 
         $reserva->update(['estado' => 'cancelada']);
+
+        // A seat just freed up: notify the earliest fitting waitlist entry.
+        $this->waitlist->promoteForFreedSlot($reserva);
 
         return (new ReservaResource($reserva->load('mesa')))
             ->additional(['message' => 'Reserva cancelada.'])

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\SmsService;
+use App\Services\StripeService;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -17,7 +19,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind the optional third-party integrations from config so they can be
+        // swapped for fakes in tests and degrade gracefully when unconfigured.
+        $this->app->singleton(StripeService::class, function ($app) {
+            $config = $app['config']->get('services.stripe');
+
+            return new StripeService(
+                secret: $config['secret'] ?? null,
+                webhookSecret: $config['webhook_secret'] ?? null,
+                currency: $config['currency'] ?? 'eur',
+            );
+        });
+
+        $this->app->singleton(SmsService::class, function ($app) {
+            $config = $app['config']->get('services.twilio');
+
+            return new SmsService(
+                sid: $config['sid'] ?? null,
+                token: $config['auth_token'] ?? null,
+                from: $config['from'] ?? null,
+            );
+        });
     }
 
     /**

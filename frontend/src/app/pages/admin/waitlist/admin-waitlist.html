@@ -1,0 +1,63 @@
+<p class="eyebrow">Demanda</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Lista de espera</h1>
+
+<div class="flex flex-wrap items-end gap-3 mb-6">
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+    <input type="date" [(ngModel)]="filtroFecha" (change)="load()"
+           class="input input-sm bg-base-100 border-base-300 rounded-field" />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/60">Estado</span>
+    <select [(ngModel)]="filtroEstado" (change)="load()" class="select select-sm bg-base-100 border-base-300 rounded-field">
+      <option value="">Todos</option>
+      @for (e of estados; track e) { <option [value]="e">{{ label(e) }}</option> }
+    </select>
+  </label>
+  <button class="btn btn-sm btn-ghost rounded-field tracking-wide" (click)="limpiar()">Limpiar</button>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else if (entries().length === 0) {
+  <div class="rounded-box border border-base-300 bg-base-100 py-16 text-center text-base-content/60">
+    No hay entradas en la lista de espera.
+  </div>
+} @else {
+  <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-warm">
+    <table class="table">
+      <thead>
+        <tr class="text-xs uppercase tracking-wider text-base-content/50">
+          <th>Nombre</th>
+          <th>Contacto</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th class="text-center">Personas</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of entries(); track e.id) {
+          <tr class="hover:bg-base-200/50">
+            <td class="font-medium">{{ e.nombre }}</td>
+            <td class="text-sm text-base-content/70">
+              @if (e.email) { <div>{{ e.email }}</div> }
+              @if (e.telefono) { <div class="tabular-nums">{{ e.telefono }}</div> }
+            </td>
+            <td class="tabular-nums">{{ e.fecha }}</td>
+            <td class="tabular-nums">{{ e.hora }}</td>
+            <td class="text-center tabular-nums">{{ e.personas }}</td>
+            <td><span class="badge badge-sm rounded-full font-medium" [class]="badge(e.estado)">{{ label(e.estado) }}</span></td>
+            <td class="text-right">
+              <button class="btn btn-xs btn-ghost text-error hover:bg-error/10 rounded-field"
+                      (click)="eliminar(e)" [disabled]="busy() === e.id">
+                @if (busy() === e.id) { <span class="loading loading-spinner loading-xs"></span> } @else { Eliminar }
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -28,6 +28,8 @@ const shots = [
   { name: 'admin-dashboard', path: '/admin', as: ['admin@laguna.com', 'password'] },
   { name: 'admin-reservas', path: '/admin/reservas', as: ['admin@laguna.com', 'password'] },
   { name: 'admin-ajustes', path: '/admin/ajustes', as: ['admin@laguna.com', 'password'] },
+  { name: 'admin-reviews', path: '/admin/reviews', as: ['admin@laguna.com', 'password'] },
+  { name: 'admin-waitlist', path: '/admin/waitlist', as: ['admin@laguna.com', 'password'] },
 ];
 
 const browser = await chromium.launch();

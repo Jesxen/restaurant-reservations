@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ReservaFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Reserva extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReservaFactory> */
+    /** @use HasFactory<ReservaFactory> */
     use HasFactory;
 
     protected $table = 'reservas';
@@ -36,11 +37,15 @@ class Reserva extends Model
         'estado',
         'notas',
         'notas_internas',
+        'payment_intent_id',
+        'deposito_estado',
+        'deposito_importe',
     ];
 
     protected $casts = [
         'fecha' => 'date:Y-m-d',
         'personas' => 'integer',
+        'deposito_importe' => 'decimal:2',
     ];
 
     protected static function booted(): void

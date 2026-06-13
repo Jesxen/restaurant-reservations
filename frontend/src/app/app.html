@@ -10,12 +10,26 @@
 
       <nav class="flex items-center gap-1 sm:gap-2">
         <a routerLink="/" routerLinkActive="text-primary" [routerLinkActiveOptions]="{ exact: true }"
-           class="btn btn-ghost btn-sm tracking-wide hidden sm:inline-flex">Inicio</a>
+           class="btn btn-ghost btn-sm tracking-wide hidden sm:inline-flex">{{ 'nav.inicio' | t }}</a>
         <a routerLink="/reservar"
-           class="btn btn-outline btn-sm border-primary text-primary hover:bg-primary hover:text-primary-content rounded-field tracking-wide">Reservar</a>
+           class="btn btn-outline btn-sm border-primary text-primary hover:bg-primary hover:text-primary-content rounded-field tracking-wide">{{ 'nav.reservar' | t }}</a>
+
+        <!-- Language switcher -->
+        <div class="join" role="group" [attr.aria-label]="'lang.switch' | t">
+          <button type="button" (click)="setLang('es')"
+                  class="btn btn-xs join-item rounded-field"
+                  [class.btn-primary]="i18n.lang() === 'es'"
+                  [class.btn-ghost]="i18n.lang() !== 'es'"
+                  [attr.aria-pressed]="i18n.lang() === 'es'">ES</button>
+          <button type="button" (click)="setLang('en')"
+                  class="btn btn-xs join-item rounded-field"
+                  [class.btn-primary]="i18n.lang() === 'en'"
+                  [class.btn-ghost]="i18n.lang() !== 'en'"
+                  [attr.aria-pressed]="i18n.lang() === 'en'">EN</button>
+        </div>
 
         @if (!auth.isAuthenticated()) {
-          <a routerLink="/login" class="btn btn-ghost btn-sm tracking-wide">Entrar</a>
+          <a routerLink="/login" class="btn btn-ghost btn-sm tracking-wide">{{ 'nav.entrar' | t }}</a>
         } @else {
           <div class="dropdown dropdown-end">
             <button tabindex="0" class="btn btn-ghost btn-sm gap-2">
@@ -27,9 +41,9 @@
               <span class="hidden sm:inline tracking-wide">{{ auth.user()?.name }}</span>
             </button>
             <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-40 w-52 p-2 shadow-warm-lg border border-base-300 mt-2">
-              <li><a routerLink="/cuenta">Mi cuenta</a></li>
-              @if (auth.isAdmin()) { <li><a routerLink="/admin">Panel admin</a></li> }
-              <li><button (click)="logout()" class="text-error">Cerrar sesión</button></li>
+              <li><a routerLink="/cuenta">{{ 'nav.cuenta' | t }}</a></li>
+              @if (auth.isAdmin()) { <li><a routerLink="/admin">{{ 'nav.admin' | t }}</a></li> }
+              <li><button (click)="logout()" class="text-error">{{ 'nav.logout' | t }}</button></li>
             </ul>
           </div>
         }
@@ -66,13 +80,13 @@
           }
         </div>
         <div class="flex items-center gap-6 text-sm text-accent-content/70">
-          <a routerLink="/privacidad" class="hover:text-primary transition-colors">Privacidad</a>
-          <a routerLink="/terminos" class="hover:text-primary transition-colors">Términos</a>
-          <a routerLink="/contacto" class="hover:text-primary transition-colors">Contacto</a>
+          <a routerLink="/privacidad" class="hover:text-primary transition-colors">{{ 'footer.privacidad' | t }}</a>
+          <a routerLink="/terminos" class="hover:text-primary transition-colors">{{ 'footer.terminos' | t }}</a>
+          <a routerLink="/contacto" class="hover:text-primary transition-colors">{{ 'footer.contacto' | t }}</a>
         </div>
       </div>
       <div class="rule-gold opacity-30 my-6"></div>
-      <p class="text-xs text-accent-content/50">© {{ year }} {{ settings().nombre_restaurante }} — Jesxen. Cocina canaria de autor.</p>
+      <p class="text-xs text-accent-content/50">© {{ year }} {{ settings().nombre_restaurante }} — Jesxen. {{ 'footer.tagline' | t }}</p>
     </div>
   </footer>
 </div>

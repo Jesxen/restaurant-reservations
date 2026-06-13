@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MesaController;
 use App\Http\Controllers\Admin\PlatoController;
 use App\Http\Controllers\Admin\ReservaController as AdminReservaController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WaitlistController as AdminWaitlistController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ContactController;
@@ -15,7 +17,10 @@ use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\WaitlistController;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
@@ -38,6 +43,17 @@ Route::post('/reservas', [ReservaController::class, 'store'])->middleware('throt
 Route::get('/settings', [SettingController::class, 'publicShow']);
 Route::post('/contacto', [ContactController::class, 'store'])->middleware('throttle:contacto');
 
+// Reviews (public read + aggregate).
+Route::get('/reviews', [ReviewController::class, 'index']);
+Route::get('/reviews/resumen', [ReviewController::class, 'resumen']);
+
+// Waitlist (public join, throttled like reservas).
+Route::post('/waitlist', [WaitlistController::class, 'store'])->middleware('throttle:reservas');
+
+// Stripe webhook (no auth, CSRF-exempt by virtue of being an API route;
+// signature is verified inside the controller).
+Route::post('/stripe/webhook', StripeWebhookController::class);
+
 // ---------------------------------------------------------------------------
 // Authenticated (any logged-in user)
 // ---------------------------------------------------------------------------
@@ -51,6 +67,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mis-reservas', [ReservaController::class, 'misReservas']);
     Route::patch('/reservas/{reserva}', [ReservaController::class, 'actualizar']);
     Route::patch('/reservas/{reserva}/cancelar', [ReservaController::class, 'cancelar']);
+
+    // Submit a review (eligibility enforced in request + policy).
+    Route::post('/reviews', [ReviewController::class, 'store']);
+
+    // Own waitlist entries.
+    Route::get('/mis-esperas', [WaitlistController::class, 'misEsperas']);
 });
 
 // ---------------------------------------------------------------------------
@@ -70,6 +92,15 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::apiResource('blackout-dates', BlackoutDateController::class)->parameters([
         'blackout-dates' => 'blackoutDate',
     ])->except(['show']);
+
+    // Reviews moderation.
+    Route::get('/reviews', [AdminReviewController::class, 'index']);
+    Route::patch('/reviews/{review}', [AdminReviewController::class, 'update']);
+    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy']);
+
+    // Waitlist management.
+    Route::get('/waitlist', [AdminWaitlistController::class, 'index']);
+    Route::delete('/waitlist/{entry}', [AdminWaitlistController::class, 'destroy']);
 });
 
 // ---------------------------------------------------------------------------

@@ -6,18 +6,18 @@
 
   <div class="relative z-10 max-w-6xl mx-auto w-full px-6 md:px-16">
     <div class="max-w-3xl">
-      <p class="eyebrow" style="color: oklch(80% 0.10 80);">San Cristóbal de La Laguna · Tenerife</p>
+      <p class="eyebrow" style="color: oklch(80% 0.10 80);">{{ 'landing.hero.eyebrow' | t }}</p>
       <h1 class="font-serif text-5xl md:text-7xl font-semibold tracking-tight leading-[1.05] mt-4"
           style="color: oklch(95% 0.02 82);">
-        Una experiencia<br /><span class="italic text-primary">gastronómica</span> única
+        {{ 'landing.hero.title1' | t }}<br /><span class="italic text-primary">{{ 'landing.hero.title2' | t }}</span> {{ 'landing.hero.title3' | t }}
       </h1>
       <p class="text-lg mt-6 max-w-xl leading-relaxed" style="color: oklch(90% 0.02 82 / 0.82);">
-        Cocina canaria de autor en el corazón histórico de La Laguna. Reserva confirmada al instante.
+        {{ 'landing.hero.subtitle' | t }}
       </p>
       <div class="flex flex-wrap gap-3 mt-9">
-        <a routerLink="/reservar" class="btn btn-primary btn-lg rounded-field tracking-wide shadow-warm-lg">Reservar mesa</a>
+        <a routerLink="/reservar" class="btn btn-primary btn-lg rounded-field tracking-wide shadow-warm-lg">{{ 'landing.hero.reservar' | t }}</a>
         <a href="#carta" class="btn btn-outline btn-lg rounded-field tracking-wide"
-           style="color: oklch(95% 0.02 82); border-color: oklch(90% 0.02 82 / 0.5);">Ver la carta</a>
+           style="color: oklch(95% 0.02 82); border-color: oklch(90% 0.02 82 / 0.5);">{{ 'landing.hero.carta' | t }}</a>
       </div>
     </div>
   </div>
@@ -27,19 +27,19 @@
 <section appReveal class="max-w-6xl mx-auto px-6 py-20">
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-base-300 rounded-box overflow-hidden border border-base-300">
     <div class="bg-base-100 p-8 text-center">
-      <p class="eyebrow">Producto</p>
-      <h3 class="font-serif text-xl font-medium mt-2">Cocina de mercado</h3>
-      <p class="text-sm text-base-content/65 mt-2 leading-relaxed">Ingredientes locales y de temporada.</p>
+      <p class="eyebrow">{{ 'landing.hl.producto' | t }}</p>
+      <h3 class="font-serif text-xl font-medium mt-2">{{ 'landing.hl.producto_t' | t }}</h3>
+      <p class="text-sm text-base-content/65 mt-2 leading-relaxed">{{ 'landing.hl.producto_d' | t }}</p>
     </div>
     <div class="bg-base-100 p-8 text-center">
-      <p class="eyebrow">Reserva</p>
-      <h3 class="font-serif text-xl font-medium mt-2">Confirmación al instante</h3>
-      <p class="text-sm text-base-content/65 mt-2 leading-relaxed">Disponibilidad en tiempo real.</p>
+      <p class="eyebrow">{{ 'landing.hl.reserva' | t }}</p>
+      <h3 class="font-serif text-xl font-medium mt-2">{{ 'landing.hl.reserva_t' | t }}</h3>
+      <p class="text-sm text-base-content/65 mt-2 leading-relaxed">{{ 'landing.hl.reserva_d' | t }}</p>
     </div>
     <div class="bg-base-100 p-8 text-center">
-      <p class="eyebrow">Ubicación</p>
-      <h3 class="font-serif text-xl font-medium mt-2">Casco histórico</h3>
-      <p class="text-sm text-base-content/65 mt-2 leading-relaxed">En el corazón de La Laguna.</p>
+      <p class="eyebrow">{{ 'landing.hl.ubicacion' | t }}</p>
+      <h3 class="font-serif text-xl font-medium mt-2">{{ 'landing.hl.ubicacion_t' | t }}</h3>
+      <p class="text-sm text-base-content/65 mt-2 leading-relaxed">{{ 'landing.hl.ubicacion_d' | t }}</p>
     </div>
   </div>
 </section>
@@ -47,8 +47,8 @@
 <!-- Carta -->
 <section appReveal id="carta" class="max-w-5xl mx-auto px-6 py-20 scroll-mt-20">
   <div class="text-center mb-14">
-    <p class="eyebrow">La carta</p>
-    <h2 class="font-serif text-4xl md:text-5xl font-medium tracking-tight mt-2">Nuestra cocina</h2>
+    <p class="eyebrow">{{ 'landing.carta.eyebrow' | t }}</p>
+    <h2 class="font-serif text-4xl md:text-5xl font-medium tracking-tight mt-2">{{ 'landing.carta.title' | t }}</h2>
     <div class="rule-gold w-24 mx-auto mt-5"></div>
   </div>
 
@@ -79,6 +79,51 @@
   }
 </section>
 
+<!-- Reseñas -->
+<section appReveal class="max-w-5xl mx-auto px-6 py-20">
+  <div class="text-center mb-12">
+    <p class="eyebrow">{{ 'reviews.eyebrow' | t }}</p>
+    <h2 class="font-serif text-4xl md:text-5xl font-medium tracking-tight mt-2">{{ 'reviews.title' | t }}</h2>
+    <div class="rule-gold w-24 mx-auto mt-5"></div>
+
+    @if (reviewResumen(); as resumen) {
+      @if (resumen.total > 0) {
+        <div class="flex flex-col items-center gap-1 mt-6">
+          <div class="flex items-baseline gap-2">
+            <span class="font-serif text-4xl font-semibold tabular-nums">{{ resumen.rating_medio.toFixed(1) }}</span>
+            <span class="text-base-content/50 text-sm">{{ 'reviews.of5' | t }}</span>
+          </div>
+          <div class="text-primary text-lg tracking-wide" aria-hidden="true">
+            @for (s of stars; track s) {<span>{{ s <= (resumen.rating_medio + 0.25) ? '★' : '☆' }}</span>}
+          </div>
+          <p class="text-xs text-base-content/50">{{ 'reviews.based_on' | t : { n: resumen.total } }}</p>
+        </div>
+      }
+    }
+  </div>
+
+  @if (loadingReviews()) {
+    <div class="flex justify-center py-12"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+  } @else if (reviews().length === 0) {
+    <p class="text-center text-base-content/55 py-8">{{ 'reviews.empty' | t }}</p>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      @for (r of reviews(); track r.id) {
+        <figure class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+          <div class="text-primary tracking-wide mb-2" aria-label="Valoración">
+            @for (s of stars; track s) {<span>{{ s <= r.rating ? '★' : '☆' }}</span>}
+          </div>
+          <blockquote class="text-base-content/75 leading-relaxed text-sm">"{{ r.comentario }}"</blockquote>
+          <figcaption class="mt-4 flex items-baseline gap-2">
+            <span class="font-serif text-base">{{ r.nombre }}</span>
+            <span class="text-xs text-base-content/40 tabular-nums">{{ r.fecha }}</span>
+          </figcaption>
+        </figure>
+      }
+    </div>
+  }
+</section>
+
 <!-- Galería -->
 <section appReveal class="max-w-6xl mx-auto px-6 py-20">
   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-[180px] md:auto-rows-[200px]">
@@ -95,19 +140,18 @@
 <section appReveal class="max-w-6xl mx-auto px-6 py-20">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
     <div>
-      <p class="eyebrow">Dónde estamos</p>
-      <h2 class="font-serif text-4xl font-medium tracking-tight mt-2">Te esperamos en La Laguna</h2>
+      <p class="eyebrow">{{ 'landing.ubic.eyebrow' | t }}</p>
+      <h2 class="font-serif text-4xl font-medium tracking-tight mt-2">{{ 'landing.ubic.title' | t }}</h2>
       <div class="rule-gold w-20 my-5"></div>
       <p class="text-base-content/70 leading-relaxed mb-6 max-w-md">
-        {{ settings().contacto.direccion || 'San Cristóbal de La Laguna, Tenerife' }}. Un espacio íntimo en el casco histórico,
-        Patrimonio de la Humanidad, para una velada inolvidable.
+        {{ settings().contacto.direccion || 'San Cristóbal de La Laguna, Tenerife' }}. {{ 'landing.ubic.desc' | t }}
       </p>
       <dl class="space-y-2 text-sm mb-8">
-        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Comida</dt><dd class="text-base-content/75">{{ settings().horarios.comida }}</dd></div>
-        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Cena</dt><dd class="text-base-content/75">{{ settings().horarios.cena }}</dd></div>
-        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Reservas</dt><dd class="text-base-content/75">Recomendado reservar con antelación</dd></div>
+        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">{{ 'landing.ubic.comida' | t }}</dt><dd class="text-base-content/75">{{ settings().horarios.comida }}</dd></div>
+        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">{{ 'landing.ubic.cena' | t }}</dt><dd class="text-base-content/75">{{ settings().horarios.cena }}</dd></div>
+        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">{{ 'landing.ubic.reservas' | t }}</dt><dd class="text-base-content/75">{{ 'footer.reservas_rec' | t }}</dd></div>
       </dl>
-      <a routerLink="/reservar" class="btn btn-primary rounded-field tracking-wide shadow-warm">Reservar ahora</a>
+      <a routerLink="/reservar" class="btn btn-primary rounded-field tracking-wide shadow-warm">{{ 'landing.ubic.reservar' | t }}</a>
     </div>
     <div class="rounded-box overflow-hidden border border-base-300 shadow-warm">
       <div #mapEl class="h-96 w-full"></div>

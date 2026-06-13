@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { ApiValidationError } from '../../core/reserva.model';
+import { TranslatePipe } from '../../core/translate.pipe';
 
 @Component({
   selector: 'app-recuperar',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './recuperar.html',
 })
 export class Recuperar {

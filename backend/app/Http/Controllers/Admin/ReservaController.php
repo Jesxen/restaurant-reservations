@@ -8,6 +8,8 @@ use App\Http\Resources\ReservaResource;
 use App\Mail\ReservaActualizada;
 use App\Models\Reserva;
 use App\Models\ReservaEvento;
+use App\Services\SmsService;
+use App\Services\WaitlistService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Mail;
@@ -15,6 +17,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReservaController extends Controller
 {
+    public function __construct(
+        private readonly SmsService $sms,
+        private readonly WaitlistService $waitlist,
+    ) {}
+
     /**
      * List reservations with optional filters (fecha, estado, q search).
      */
@@ -55,9 +62,41 @@ class ReservaController extends Controller
             if (in_array($data['estado'], ['confirmada', 'cancelada'], true)) {
                 Mail::to($reserva->email)->send(new ReservaActualizada($reserva));
             }
+
+            // SMS confirmation (best-effort, only when the customer has a phone).
+            if ($data['estado'] === 'confirmada') {
+                $this->enviarSmsConfirmacion($reserva);
+            }
+
+            // Seat freed up (declined / cancelled / no-show): promote the
+            // earliest fitting waitlist entry.
+            if (in_array($data['estado'], ['cancelada', 'no_show'], true)) {
+                $this->waitlist->promoteForFreedSlot($reserva);
+            }
         }
 
         return new ReservaResource($reserva->load(['mesa', 'eventos.user']));
+    }
+
+    /**
+     * Send a short Spanish SMS confirmation when the reservation's customer has
+     * a phone on their linked account. No-ops silently when SMS is unconfigured.
+     */
+    private function enviarSmsConfirmacion(Reserva $reserva): void
+    {
+        $telefono = $reserva->user?->phone;
+
+        if (empty($telefono)) {
+            return;
+        }
+
+        $fecha = $reserva->fecha?->format('d/m/Y');
+        $hora = substr((string) $reserva->hora, 0, 5);
+
+        $this->sms->send(
+            $telefono,
+            "Tu reserva {$reserva->localizador} está confirmada para el {$fecha} a las {$hora}. ¡Te esperamos!",
+        );
     }
 
     /**

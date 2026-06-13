@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Reserva;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Reserva>
+ * @extends Factory<Reserva>
  */
 class ReservaFactory extends Factory
 {

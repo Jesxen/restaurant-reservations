@@ -10,6 +10,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { ApiValidationError } from '../../core/reserva.model';
+import { TranslatePipe } from '../../core/translate.pipe';
 
 /** Group-level validator: password_confirmation must match password. */
 function passwordsMatch(group: AbstractControl): ValidationErrors | null {
@@ -23,7 +24,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-restablecer',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './restablecer.html',
 })
 export class Restablecer {

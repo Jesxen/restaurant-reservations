@@ -16,8 +16,8 @@
 
     <!-- Form -->
     <div class="bg-base-100 p-8 md:p-10">
-      <p class="eyebrow">Bienvenido de nuevo</p>
-      <h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Iniciar sesión</h1>
+      <p class="eyebrow">{{ 'login.eyebrow' | t }}</p>
+      <h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">{{ 'login.title' | t }}</h1>
 
       @if (reset() === '1') {
         <div class="alert alert-success rounded-box mb-5" role="status"><span>Contraseña restablecida. Ya puedes iniciar sesión.</span></div>
@@ -28,7 +28,7 @@
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4" novalidate>
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Correo</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'login.email' | t }}</span>
           <input type="email" formControlName="email" autocomplete="email" placeholder="tu@correo.com"
                  [class.input-error]="clientError('email') || errorsFor('email').length"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
@@ -36,22 +36,22 @@
           @for (m of errorsFor('email'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
         </label>
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Contraseña</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'login.password' | t }}</span>
           <input type="password" formControlName="password" autocomplete="current-password" placeholder="••••••••"
                  [class.input-error]="clientError('password') || errorsFor('password').length"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
           @if (clientError('password'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
           @for (m of errorsFor('password'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
-          <a routerLink="/recuperar-password" class="text-xs text-primary mt-1.5 self-end hover:underline">¿Olvidaste tu contraseña?</a>
+          <a routerLink="/recuperar-password" class="text-xs text-primary mt-1.5 self-end hover:underline">{{ 'login.olvidaste' | t }}</a>
         </label>
         <button type="submit" class="btn btn-primary w-full rounded-field tracking-wide" [disabled]="submitting() || form.invalid">
-          @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> Entrando… }
-          @else { Entrar }
+          @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> {{ 'login.entrando' | t }} }
+          @else { {{ 'login.entrar' | t }} }
         </button>
       </form>
 
       <p class="text-sm text-center mt-5 text-base-content/70">
-        ¿No tienes cuenta? <a routerLink="/registro" class="text-primary font-medium">Regístrate</a>
+        {{ 'login.no_cuenta' | t }} <a routerLink="/registro" class="text-primary font-medium">{{ 'login.registrate' | t }}</a>
       </p>
 
       <div class="rule-gold opacity-30 my-5"></div>

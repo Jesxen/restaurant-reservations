@@ -20,6 +20,13 @@ export interface ReservaEvento {
   created_at: string | null;
 }
 
+export type DepositoEstado = 'no_aplica' | 'pendiente' | 'pagado' | 'reembolsado';
+
+export interface Deposito {
+  estado: DepositoEstado;
+  importe: number | null;
+}
+
 export interface Reserva {
   id: number;
   nombre: string;
@@ -34,6 +41,7 @@ export interface Reserva {
   mesa: Mesa | null;
   user_id: number | null;
   cancelable: boolean;
+  deposito?: Deposito;
   eventos?: ReservaEvento[];
   created_at: string | null;
 }
@@ -41,6 +49,7 @@ export interface Reserva {
 export interface NuevaReserva {
   nombre: string;
   email: string;
+  telefono?: string;
   fecha: string;
   hora: string;
   personas: number;

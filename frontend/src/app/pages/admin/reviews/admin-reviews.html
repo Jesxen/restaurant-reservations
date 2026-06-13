@@ -1,0 +1,44 @@
+<p class="eyebrow">Moderación</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Reseñas</h1>
+
+<div class="tabs tabs-boxed bg-base-100 border border-base-300 rounded-field w-fit mb-6">
+  <button class="tab" [class.tab-active]="filtro() === 'pendientes'" (click)="setFiltro('pendientes')">Pendientes</button>
+  <button class="tab" [class.tab-active]="filtro() === 'aprobadas'" (click)="setFiltro('aprobadas')">Aprobadas</button>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else if (reviews().length === 0) {
+  <div class="rounded-box border border-base-300 bg-base-100 py-16 text-center text-base-content/60">
+    No hay reseñas {{ filtro() === 'aprobadas' ? 'aprobadas' : 'pendientes' }}.
+  </div>
+} @else {
+  <div class="space-y-4">
+    @for (r of reviews(); track r.id) {
+      <div class="card bg-base-100 border border-base-300 rounded-box shadow-warm">
+        <div class="card-body p-5 flex-col sm:flex-row sm:items-start gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <span class="font-serif text-lg">{{ r.nombre }}</span>
+              <span class="text-primary tracking-wide" aria-label="Valoración">
+                @for (s of stars; track s) {<span>{{ s <= r.rating ? '★' : '☆' }}</span>}
+              </span>
+              <span class="text-xs text-base-content/50 tabular-nums">{{ r.fecha }}</span>
+            </div>
+            <p class="text-sm text-base-content/75 leading-relaxed">{{ r.comentario }}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="btn btn-sm rounded-field tracking-wide"
+                    [class.btn-success]="!r.aprobada" [class.btn-outline]="r.aprobada"
+                    (click)="toggleAprobada(r)" [disabled]="busy() === r.id">
+              @if (busy() === r.id) { <span class="loading loading-spinner loading-xs"></span> }
+              {{ r.aprobada ? 'Ocultar' : 'Aprobar' }}
+            </button>
+            <button class="btn btn-sm btn-ghost text-error hover:bg-error/10 rounded-field tracking-wide"
+                    (click)="eliminar(r)" [disabled]="busy() === r.id">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

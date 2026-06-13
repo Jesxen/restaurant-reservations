@@ -63,6 +63,11 @@ class SettingRequest extends FormRequest
             // Gallery.
             'galeria' => ['nullable', 'array', 'max:24'],
             'galeria.*' => ['url', 'max:255'],
+
+            // Deposits (Stripe). Optional block; preserved when omitted.
+            'deposito' => ['sometimes', 'array'],
+            'deposito.activo' => ['required_with:deposito', 'boolean'],
+            'deposito.por_persona' => ['required_with:deposito', 'numeric', 'min:0', 'max:9999.99'],
         ];
     }
 

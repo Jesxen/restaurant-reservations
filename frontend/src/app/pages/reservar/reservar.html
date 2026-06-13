@@ -1,18 +1,18 @@
 <div class="max-w-6xl mx-auto px-6 py-16">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
     <div class="max-w-lg">
-      <p class="eyebrow">Reserva</p>
-      <h1 class="font-serif text-4xl md:text-5xl font-semibold tracking-tight mt-2">Reserva tu mesa</h1>
+      <p class="eyebrow">{{ 'reservar.eyebrow' | t }}</p>
+      <h1 class="font-serif text-4xl md:text-5xl font-semibold tracking-tight mt-2">{{ 'reservar.title' | t }}</h1>
       <div class="rule-gold w-20 my-5"></div>
       <p class="text-base-content/70 leading-relaxed mb-8">
-        Selecciona fecha, horario y número de comensales. Confirmamos la disponibilidad al instante.
+        {{ 'reservar.subtitle' | t }}
       </p>
 
       @if (!auth.isAuthenticated()) {
         <div class="alert bg-base-200 border border-base-300 rounded-box mb-6">
           <span class="text-sm">
-            ¿Tienes cuenta? <a routerLink="/login" class="text-primary font-medium">Inicia sesión</a>
-            para gestionar tus reservas.
+            {{ 'reservar.tienes_cuenta' | t }} <a routerLink="/login" class="text-primary font-medium">{{ 'reservar.inicia_sesion' | t }}</a>
+            {{ 'reservar.para_gestionar' | t }}
           </span>
         </div>
       }
@@ -22,63 +22,164 @@
           <span class="font-medium">{{ successMessage() }}</span>
         </div>
       }
+      @if (waitlistMessage()) {
+        <div class="alert alert-info rounded-box mb-6" role="status"><span class="font-medium">{{ waitlistMessage() }}</span></div>
+      }
       @if (errorsFor('general').length) {
         <div class="alert alert-error rounded-box mb-6" role="alert"><span>{{ errorsFor('general')[0] }}</span></div>
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" novalidate>
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Nombre</span>
-          <input type="text" formControlName="nombre" placeholder="Tu nombre"
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.nombre' | t }}</span>
+          <input type="text" formControlName="nombre" [placeholder]="'reservar.nombre_ph' | t"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 transition-colors" />
           @for (m of errorsFor('nombre'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Correo electrónico</span>
-          <input type="email" formControlName="email" placeholder="tu@correo.com"
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.email' | t }}</span>
+          <input type="email" formControlName="email" [placeholder]="'reservar.email_ph' | t"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 transition-colors" />
           @for (m of errorsFor('email'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.telefono' | t }} <span class="opacity-50 normal-case tracking-normal">{{ 'reservar.opcional' | t }}</span></span>
+          <input type="tel" formControlName="telefono" autocomplete="tel" [placeholder]="'reservar.telefono_ph' | t"
+                 [class.input-error]="(form.controls.telefono.touched && form.controls.telefono.invalid) || errorsFor('telefono').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 transition-colors" />
+          <span class="text-xs text-base-content/50 mt-1">{{ 'reservar.telefono_nota' | t }}</span>
+          @if (form.controls.telefono.touched && form.controls.telefono.invalid) { <span class="text-xs text-error mt-1">{{ 'reservar.telefono_ph' | t }}</span> }
+          @for (m of errorsFor('telefono'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.fecha' | t }}</span>
           <input type="date" formControlName="fecha" [min]="minDate"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
           @for (m of errorsFor('fecha'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <div class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Hora</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.hora' | t }}</span>
           <app-slot-picker [fecha]="fecha()" [hora]="form.controls.hora.value" (horaChange)="onHoraChange($event)" [invalid]="horaInvalid" />
           @for (m of errorsFor('hora'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </div>
 
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Número de personas</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.personas' | t }}</span>
           <input type="number" min="1" formControlName="personas"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
           @for (m of errorsFor('personas'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Notas <span class="opacity-50 normal-case tracking-normal">(opcional)</span></span>
-          <textarea formControlName="notas" rows="2" placeholder="Alergias, preferencias…"
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.notas' | t }} <span class="opacity-50 normal-case tracking-normal">{{ 'reservar.opcional' | t }}</span></span>
+          <textarea formControlName="notas" rows="2" [placeholder]="'reservar.notas_ph' | t"
                     class="textarea w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"></textarea>
         </label>
 
         <button type="submit" class="btn btn-primary w-full rounded-field tracking-wide shadow-warm hover:shadow-warm-lg transition-shadow" [disabled]="submitting()">
-          @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> Enviando… }
-          @else { Confirmar reserva }
+          @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> {{ 'reservar.enviando' | t }} }
+          @else { {{ 'reservar.confirmar' | t }} }
         </button>
       </form>
+
+      <!-- Waitlist CTA: shown when a slot looks full (422 on hora) or as an always-available fallback. -->
+      <div class="mt-5 rounded-box border border-dashed border-base-300 bg-base-200/50 p-4">
+        @if (errorsFor('hora').length) {
+          <p class="text-sm text-base-content/70 mb-2">{{ 'reservar.wl.full' | t }}</p>
+        }
+        <button type="button" class="btn btn-outline btn-sm rounded-field tracking-wide" (click)="openWaitlist()">
+          {{ 'reservar.wl.cta' | t }}
+        </button>
+      </div>
     </div>
 
     <div class="hidden md:block sticky top-24">
       <figure class="rounded-box overflow-hidden border border-base-300 shadow-warm-lg">
         <img src="https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg"
-             alt="Mesa del restaurante" class="w-full h-[34rem] object-cover" />
+             [alt]="'reservar.img_alt' | t" class="w-full h-[34rem] object-cover" />
       </figure>
     </div>
   </div>
 </div>
+
+<!-- Waitlist modal -->
+@if (waitlistOpen()) {
+  <div class="modal modal-open" role="dialog" aria-modal="true" [attr.aria-label]="'reservar.wl.title' | t">
+    <div class="modal-box bg-base-100 border border-base-300 rounded-box shadow-warm-lg max-w-md">
+      <p class="eyebrow">{{ 'reservar.wl.title' | t }}</p>
+      <h3 class="font-serif text-2xl font-semibold tracking-tight mt-1 mb-1">{{ 'reservar.wl.cta' | t }}</h3>
+      <div class="rule-gold w-16 mb-4"></div>
+      <p class="text-sm text-base-content/70 mb-4">{{ 'reservar.wl.desc' | t }}</p>
+
+      @if (waitlistErrorsFor('general').length) {
+        <div class="alert alert-error rounded-box mb-4 py-2" role="alert"><span>{{ waitlistErrorsFor('general')[0] }}</span></div>
+      }
+      @if (waitlistErrorsFor('hora').length) {
+        <div class="alert alert-warning rounded-box mb-4 py-2" role="alert"><span>{{ waitlistErrorsFor('hora')[0] }}</span></div>
+      }
+
+      <dl class="text-sm space-y-1 mb-4 text-base-content/75">
+        <div class="flex justify-between"><dt class="text-base-content/50">{{ 'reservar.nombre' | t }}</dt><dd>{{ form.controls.nombre.value || '—' }}</dd></div>
+        <div class="flex justify-between"><dt class="text-base-content/50">{{ 'reservar.fecha' | t }}</dt><dd class="tabular-nums">{{ form.controls.fecha.value || '—' }}</dd></div>
+        <div class="flex justify-between"><dt class="text-base-content/50">{{ 'reservar.hora' | t }}</dt><dd class="tabular-nums">{{ form.controls.hora.value || '—' }}</dd></div>
+        <div class="flex justify-between"><dt class="text-base-content/50">{{ 'reservar.personas' | t }}</dt><dd class="tabular-nums">{{ form.controls.personas.value }}</dd></div>
+      </dl>
+      <p class="text-xs text-base-content/50 mb-4">{{ 'reservar.telefono_nota' | t }}</p>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost rounded-field tracking-wide" (click)="closeWaitlist()" [disabled]="waitlistSubmitting()">{{ 'reservar.wl.cancelar' | t }}</button>
+        <button type="button" class="btn btn-primary rounded-field tracking-wide shadow-warm" (click)="submitWaitlist()" [disabled]="waitlistSubmitting()">
+          @if (waitlistSubmitting()) { <span class="loading loading-spinner loading-sm"></span> {{ 'reservar.wl.enviando' | t }} }
+          @else { {{ 'reservar.wl.enviar' | t }} }
+        </button>
+      </div>
+    </div>
+    <button type="button" class="modal-backdrop" (click)="closeWaitlist()" [attr.aria-label]="'common.cerrar' | t"></button>
+  </div>
+}
+
+<!-- Stripe deposit modal -->
+@if (depositSecret()) {
+  <div class="modal modal-open" role="dialog" aria-modal="true" [attr.aria-label]="'reservar.dep.title' | t">
+    <div class="modal-box bg-base-100 border border-base-300 rounded-box shadow-warm-lg max-w-md">
+      <p class="eyebrow">{{ 'reservar.eyebrow' | t }}</p>
+      <h3 class="font-serif text-2xl font-semibold tracking-tight mt-1 mb-1">{{ 'reservar.dep.title' | t }}</h3>
+      <div class="rule-gold w-16 mb-4"></div>
+
+      <p class="text-sm text-base-content/70 mb-3">
+        {{ 'reservar.dep.desc' | t : { amount: money(depositTotal()), per: money(depositPerPerson()), people: depositReservaPersonas() } }}
+      </p>
+      <div class="rounded-field bg-base-200 border border-base-300 px-4 py-3 mb-4 flex items-baseline justify-between">
+        <span class="text-xs uppercase tracking-wider text-base-content/50">{{ 'reservar.dep.title' | t }}</span>
+        <span class="font-serif text-2xl font-semibold text-primary tabular-nums">{{ money(depositTotal()) }}</span>
+      </div>
+
+      @if (depositLoadFailed()) {
+        <div class="alert alert-error rounded-box mb-4 py-2" role="alert"><span>{{ 'reservar.dep.load_fail' | t }}</span></div>
+      } @else {
+        <!-- Stripe Payment Element mounts here -->
+        <div #payHost class="min-h-[3rem] mb-4"></div>
+      }
+
+      @if (depositError(); as e) {
+        <div class="alert alert-error rounded-box mb-4 py-2" role="alert">
+          <span>{{ e === '__fail__' ? ('reservar.dep.fail' | t) : e }}</span>
+        </div>
+      }
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost rounded-field tracking-wide" (click)="closeDeposit()" [disabled]="paying()">{{ 'reservar.dep.cerrar' | t }}</button>
+        @if (!depositLoadFailed()) {
+          <button type="button" class="btn btn-primary rounded-field tracking-wide shadow-warm" (click)="payDeposit()" [disabled]="paying()">
+            @if (paying()) { <span class="loading loading-spinner loading-sm"></span> {{ 'reservar.dep.procesando' | t }} }
+            @else { {{ 'reservar.dep.pagar' | t }} }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

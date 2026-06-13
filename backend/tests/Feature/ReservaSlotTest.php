@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\BlackoutDate;
-use App\Models\Mesa;
 use App\Models\Reserva;
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;

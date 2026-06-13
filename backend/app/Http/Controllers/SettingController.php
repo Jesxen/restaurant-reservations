@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Admin\SettingRequest;
 use App\Http\Resources\SettingResource;
+use App\Models\Reserva;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 
@@ -35,8 +36,8 @@ class SettingController extends Controller
             'reservas' => [
                 'intervalo_slots' => $s->intervaloSlots(),
                 'antelacion_min_horas' => $s->antelacionMinHoras(),
-                'max_personas_online' => $s->max_personas_online ?: \App\Models\Reserva::MAX_PERSONAS,
-                'ventana_dias' => \App\Models\Reserva::VENTANA_RESERVA_DIAS,
+                'max_personas_online' => $s->max_personas_online ?: Reserva::MAX_PERSONAS,
+                'ventana_dias' => Reserva::VENTANA_RESERVA_DIAS,
             ],
             'branding' => [
                 'logo_url' => $s->logo_url,
@@ -59,6 +60,16 @@ class SettingController extends Controller
                 'tiktok' => $s->tiktok_url,
             ],
             'galeria' => $s->galeria ?? [],
+
+            // --- Deposits (v3) ----------------------------------------------
+            // Tells the frontend whether to collect a Stripe deposit at booking.
+            // `stripe_key` is the PUBLISHABLE key (safe to expose) used to
+            // initialise Stripe.js; null when Stripe is not configured.
+            'deposito' => [
+                'activo' => $s->depositoActivo() && ! empty(config('services.stripe.secret')),
+                'por_persona' => $s->depositoPorPersona(),
+                'stripe_key' => config('services.stripe.key'),
+            ],
         ]);
     }
 
@@ -109,6 +120,15 @@ class SettingController extends Controller
             'galeria' => $v['galeria'] ?? [],
         ]);
 
-        return (new SettingResource($setting))->response()->setStatusCode(200);
+        // Deposit config is optional in the payload; only touch it when sent so
+        // older clients that omit the `deposito` block keep their values.
+        if (isset($v['deposito']) && is_array($v['deposito'])) {
+            $setting->update([
+                'deposito_activo' => (bool) ($v['deposito']['activo'] ?? false),
+                'deposito_por_persona' => $v['deposito']['por_persona'] ?? 0,
+            ]);
+        }
+
+        return (new SettingResource($setting->refresh()))->response()->setStatusCode(200);
     }
 }

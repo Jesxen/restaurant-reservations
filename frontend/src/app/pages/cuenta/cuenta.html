@@ -1,25 +1,25 @@
 <div class="max-w-5xl mx-auto px-6 py-16">
   <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-3">
     <div>
-      <p class="eyebrow">Mi cuenta</p>
-      <h1 class="font-serif text-4xl font-semibold tracking-tight mt-1">Hola, {{ auth.user()?.name }}</h1>
+      <p class="eyebrow">{{ 'cuenta.eyebrow' | t }}</p>
+      <h1 class="font-serif text-4xl font-semibold tracking-tight mt-1">{{ 'cuenta.hola' | t }}, {{ auth.user()?.name }}</h1>
       <p class="text-base-content/60 text-sm mt-1">{{ auth.user()?.email }}</p>
     </div>
-    <a routerLink="/reservar" class="btn btn-primary rounded-field tracking-wide shadow-warm">Nueva reserva</a>
+    <a routerLink="/reservar" class="btn btn-primary rounded-field tracking-wide shadow-warm">{{ 'cuenta.nueva' | t }}</a>
   </div>
   <div class="rule-gold w-24 mb-10"></div>
 
   @if (auth.user()?.email_verified === false) {
     <div class="alert bg-base-200 border border-base-300 rounded-box mb-8 flex-col sm:flex-row sm:items-center gap-3" role="status">
       <span class="text-sm flex-1">
-        <span class="font-medium">Verifica tu correo.</span>
-        Te hemos enviado un enlace de verificación a {{ auth.user()?.email }}.
+        <span class="font-medium">{{ 'cuenta.verifica' | t }}</span>
+        {{ 'cuenta.verifica_desc' | t }} {{ auth.user()?.email }}.
       </span>
       <div class="flex items-center gap-3">
         @if (resentMessage()) { <span class="text-success text-xs">{{ resentMessage() }}</span> }
         <button class="btn btn-sm btn-outline rounded-field tracking-wide" (click)="reenviarVerificacion()" [disabled]="resending()">
           @if (resending()) { <span class="loading loading-spinner loading-xs"></span> }
-          Reenviar
+          {{ 'cuenta.reenviar' | t }}
         </button>
       </div>
     </div>
@@ -29,14 +29,14 @@
     <div class="alert alert-success rounded-box mb-8" role="status"><span class="font-medium">{{ editMessage() }}</span></div>
   }
 
-  <h2 class="font-serif text-2xl font-medium mb-6">Mis reservas</h2>
+  <h2 class="font-serif text-2xl font-medium mb-6">{{ 'cuenta.mis_reservas' | t }}</h2>
 
   @if (loading()) {
     <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
   } @else if (reservas().length === 0) {
     <div class="rounded-box border border-base-300 bg-base-200 py-16 text-center">
-      <p class="text-base-content/60 mb-4">Aún no tienes reservas.</p>
-      <a routerLink="/reservar" class="btn btn-primary btn-sm rounded-field tracking-wide">Reservar mesa</a>
+      <p class="text-base-content/60 mb-4">{{ 'cuenta.sin_reservas' | t }}</p>
+      <a routerLink="/reservar" class="btn btn-primary btn-sm rounded-field tracking-wide">{{ 'cuenta.reservar_mesa' | t }}</a>
     </div>
   } @else {
     <div class="space-y-4">
@@ -53,10 +53,18 @@
             <div class="rule-gold w-px h-12 rotate-0" style="width:1px;background:var(--color-base-300);"></div>
             <!-- Details -->
             <div class="flex-1">
-              <p class="font-serif text-xl">{{ r.hora }} · {{ r.personas }} personas</p>
+              <p class="font-serif text-xl">{{ r.hora }} · {{ r.personas }} {{ 'cuenta.personas' | t }}</p>
               <p class="text-sm text-base-content/60">
-                @if (r.mesa) { Mesa {{ r.mesa.numero }} } @else { Mesa por asignar }
+                @if (r.mesa) { {{ 'cuenta.mesa' | t }} {{ r.mesa.numero }} } @else { {{ 'cuenta.mesa_por_asignar' | t }} }
                 @if (r.notas) { · "{{ r.notas }}" }
+                @if (r.deposito && r.deposito.estado !== 'no_aplica') {
+                  · <span class="badge badge-xs rounded-full align-middle"
+                          [class.badge-success]="r.deposito.estado === 'pagado'"
+                          [class.badge-warning]="r.deposito.estado === 'pendiente'"
+                          [class.badge-ghost]="r.deposito.estado === 'reembolsado'">
+                      {{ r.deposito.estado }}@if (r.deposito.importe) { · {{ r.deposito.importe }} € }
+                    </span>
+                }
               </p>
             </div>
             <!-- Status + action -->
@@ -68,19 +76,87 @@
               <div class="flex items-center gap-1">
                 @if (editable(r)) {
                   <button class="btn btn-ghost btn-xs text-primary hover:bg-primary/10 tracking-wide"
-                          (click)="abrirEditar(r)">Editar</button>
+                          (click)="abrirEditar(r)">{{ 'cuenta.editar' | t }}</button>
                 }
                 @if (r.cancelable) {
                   <button class="btn btn-ghost btn-xs text-error hover:bg-error/10 tracking-wide"
                           (click)="cancelar(r)" [disabled]="canceling() === r.id">
                     @if (canceling() === r.id) { <span class="loading loading-spinner loading-xs"></span> }
-                    Cancelar
+                    {{ 'cuenta.cancelar' | t }}
                   </button>
                 }
               </div>
             </div>
           </div>
         </div>
+      }
+    </div>
+  }
+
+  <!-- Lista de espera -->
+  @if (esperas().length) {
+    <h2 class="font-serif text-2xl font-medium mt-14 mb-6">{{ 'cuenta.wl.title' | t }}</h2>
+    <div class="space-y-3">
+      @for (e of esperas(); track e.id) {
+        <div class="rounded-box border border-base-300 bg-base-100 shadow-warm px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p class="font-serif text-lg tabular-nums">{{ e.fecha }} · {{ e.hora }}</p>
+            <p class="text-sm text-base-content/60">{{ e.personas }} {{ 'cuenta.wl.personas' | t }}</p>
+          </div>
+          <span class="badge badge-sm rounded-full font-medium tracking-wide"
+                [class.badge-warning]="e.estado === 'esperando'"
+                [class.badge-info]="e.estado === 'avisado'"
+                [class.badge-success]="e.estado === 'convertida'"
+                [class.badge-ghost]="e.estado === 'cancelada' || e.estado === 'expirada'">{{ e.estado }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Deja tu reseña -->
+  @if (canReview()) {
+    <div class="mt-14 rounded-box border border-base-300 bg-base-100 shadow-warm p-6 md:p-8">
+      <p class="eyebrow">{{ 'cuenta.review.eyebrow' | t }}</p>
+      <h2 class="font-serif text-2xl font-medium mt-1 mb-1">{{ 'cuenta.review.title' | t }}</h2>
+      <div class="rule-gold w-16 mb-4"></div>
+      <p class="text-sm text-base-content/65 mb-5">{{ 'cuenta.review.desc' | t }}</p>
+
+      @if (reviewDone()) {
+        <div class="alert alert-success rounded-box" role="status"><span class="font-medium">{{ 'cuenta.review.pendiente' | t }}</span></div>
+      } @else {
+        @if (reviewErrorsFor('general').length) {
+          <div class="alert alert-error rounded-box mb-4 py-2" role="alert"><span>{{ reviewErrorsFor('general')[0] }}</span></div>
+        }
+        @if (reviewErrorsFor('reserva').length) {
+          <div class="alert alert-warning rounded-box mb-4 py-2" role="alert"><span>{{ reviewErrorsFor('reserva')[0] }}</span></div>
+        }
+        <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="space-y-4" novalidate>
+          <div class="form-control">
+            <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'cuenta.review.rating' | t }}</span>
+            <div class="flex items-center gap-1 text-3xl text-primary" role="radiogroup" [attr.aria-label]="'cuenta.review.rating' | t">
+              @for (s of stars; track s) {
+                <button type="button" (click)="setRating(s)" role="radio" [attr.aria-checked]="reviewRating() === s"
+                        class="leading-none transition-transform hover:scale-110 focus:outline-none">
+                  {{ s <= reviewRating() ? '★' : '☆' }}
+                </button>
+              }
+            </div>
+            @for (m of reviewErrorsFor('rating'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+          </div>
+
+          <label class="form-control w-full">
+            <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'cuenta.review.comentario' | t }}</span>
+            <textarea formControlName="comentario" rows="3" [placeholder]="'cuenta.review.comentario_ph' | t"
+                      [class.input-error]="(reviewForm.controls.comentario.touched && reviewForm.controls.comentario.invalid) || reviewErrorsFor('comentario').length"
+                      class="textarea w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"></textarea>
+            @for (m of reviewErrorsFor('comentario'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+          </label>
+
+          <button type="submit" class="btn btn-primary rounded-field tracking-wide shadow-warm" [disabled]="reviewSubmitting()">
+            @if (reviewSubmitting()) { <span class="loading loading-spinner loading-sm"></span> {{ 'cuenta.review.enviando' | t }} }
+            @else { {{ 'cuenta.review.enviar' | t }} }
+          </button>
+        </form>
       }
     </div>
   }
@@ -105,37 +181,37 @@
 
       <form [formGroup]="editForm" (ngSubmit)="guardarEdicion()" class="space-y-4" novalidate>
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.fecha' | t }}</span>
           <input type="date" formControlName="fecha" [min]="minDate"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
           @for (m of errorsFor('fecha'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <div class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Hora</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.hora' | t }}</span>
           <app-slot-picker [fecha]="editFecha()" [hora]="editForm.controls.hora.value" (horaChange)="onHoraChange($event)" [invalid]="horaInvalid" />
           @for (m of errorsFor('hora'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </div>
 
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Número de personas</span>
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.personas' | t }}</span>
           <input type="number" min="1" formControlName="personas"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
           @for (m of errorsFor('personas'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <label class="form-control w-full">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Notas <span class="opacity-50 normal-case tracking-normal">(opcional)</span></span>
-          <textarea formControlName="notas" rows="2" placeholder="Alergias, preferencias…"
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ 'reservar.notas' | t }} <span class="opacity-50 normal-case tracking-normal">{{ 'reservar.opcional' | t }}</span></span>
+          <textarea formControlName="notas" rows="2" [placeholder]="'reservar.notas_ph' | t"
                     class="textarea w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"></textarea>
           @for (m of errorsFor('notas'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
         <div class="modal-action mt-6">
-          <button type="button" class="btn btn-ghost rounded-field tracking-wide" (click)="cerrarEditar()" [disabled]="saving()">Cancelar</button>
+          <button type="button" class="btn btn-ghost rounded-field tracking-wide" (click)="cerrarEditar()" [disabled]="saving()">{{ 'common.cancelar' | t }}</button>
           <button type="submit" class="btn btn-primary rounded-field tracking-wide shadow-warm" [disabled]="saving()">
-            @if (saving()) { <span class="loading loading-spinner loading-sm"></span> Guardando… }
-            @else { Guardar cambios }
+            @if (saving()) { <span class="loading loading-spinner loading-sm"></span> {{ 'cuenta.review.enviando' | t }} }
+            @else { {{ 'cuenta.editar' | t }} }
           </button>
         </div>
       </form>

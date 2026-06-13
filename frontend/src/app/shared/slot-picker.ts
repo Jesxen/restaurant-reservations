@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { HorariosService } from '../core/horarios.service';
 import { Horarios } from '../core/reserva.model';
+import { I18nService } from '../core/i18n.service';
+import { TranslatePipe } from '../core/translate.pipe';
 
 /**
  * Discrete slot picker driven by GET /api/horarios?fecha.
@@ -17,10 +19,12 @@ import { Horarios } from '../core/reserva.model';
  */
 @Component({
   selector: 'app-slot-picker',
+  imports: [TranslatePipe],
   templateUrl: './slot-picker.html',
 })
 export class SlotPicker {
   private readonly horariosService = inject(HorariosService);
+  protected readonly i18n = inject(I18nService);
 
   /** Selected date (YYYY-MM-DD). Empty string = none picked. */
   readonly fecha = input<string>('');

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\PlatoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Plato extends Model
 {
-    /** @use HasFactory<\Database\Factories\PlatoFactory> */
+    /** @use HasFactory<PlatoFactory> */
     use HasFactory;
 
     protected $table = 'platos';

@@ -3,10 +3,11 @@
 namespace App\Http\Resources;
 
 use App\Models\Reserva;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\Setting */
+/** @mixin Setting */
 class SettingResource extends JsonResource
 {
     /**
@@ -61,6 +62,10 @@ class SettingResource extends JsonResource
                 'tiktok' => $this->tiktok_url,
             ],
             'galeria' => $this->galeria ?? [],
+            'deposito' => [
+                'activo' => (bool) $this->deposito_activo,
+                'por_persona' => (float) $this->deposito_por_persona,
+            ],
         ];
     }
 }

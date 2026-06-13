@@ -1,9 +1,8 @@
 <div class="max-w-5xl mx-auto px-6 py-16">
-  <p class="eyebrow">Hablemos</p>
-  <h1 class="font-serif text-4xl font-semibold tracking-tight mt-1">Contacto</h1>
+  <p class="eyebrow">{{ 'contacto.eyebrow' | t }}</p>
+  <h1 class="font-serif text-4xl font-semibold tracking-tight mt-1">{{ 'contacto.title' | t }}</h1>
   <div class="rule-gold w-24 my-6"></div>
-  <p class="text-base-content/60 max-w-2xl mb-12">¿Tienes una duda, una celebración especial o quieres
-    reservar para un grupo grande? Escríbenos y te respondemos lo antes posible.</p>
+  <p class="text-base-content/60 max-w-2xl mb-12">{{ 'contacto.desc' | t }}</p>
 
   <div class="grid md:grid-cols-2 gap-10">
     <!-- Datos -->
@@ -65,7 +64,7 @@
             <div class="alert alert-error text-sm rounded-field py-2" role="alert">{{ error() }}</div>
           }
           <div>
-            <label class="block text-sm font-medium mb-1" for="nombre">Nombre</label>
+            <label class="block text-sm font-medium mb-1" for="nombre">{{ 'contacto.nombre' | t }}</label>
             <input id="nombre" formControlName="nombre"
                    [class.input-error]="clientError('nombre') || errorsFor('nombre').length"
                    class="input input-bordered w-full rounded-field" placeholder="Tu nombre" />
@@ -73,7 +72,7 @@
             @for (m of errorsFor('nombre'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1" for="remitente">Email</label>
+            <label class="block text-sm font-medium mb-1" for="remitente">{{ 'contacto.email' | t }}</label>
             <input id="remitente" type="email" formControlName="email"
                    [class.input-error]="clientError('email') || errorsFor('email').length"
                    class="input input-bordered w-full rounded-field" placeholder="tucorreo@ejemplo.com" />
@@ -81,7 +80,7 @@
             @for (m of errorsFor('email'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1" for="mensaje">Mensaje</label>
+            <label class="block text-sm font-medium mb-1" for="mensaje">{{ 'contacto.mensaje' | t }}</label>
             <textarea id="mensaje" formControlName="mensaje" rows="4"
                       [class.textarea-error]="clientError('mensaje') || errorsFor('mensaje').length"
                       class="textarea textarea-bordered w-full rounded-field" placeholder="¿En qué podemos ayudarte?"></textarea>
@@ -90,7 +89,7 @@
           </div>
           <button type="submit" [disabled]="enviando() || form.invalid"
                   class="btn btn-primary w-full rounded-field tracking-wide shadow-warm">
-            @if (enviando()) { <span class="loading loading-spinner loading-sm"></span> } @else { Enviar mensaje }
+            @if (enviando()) { <span class="loading loading-spinner loading-sm"></span> {{ 'contacto.enviando' | t }} } @else { {{ 'contacto.enviar' | t }} }
           </button>
         </form>
       }

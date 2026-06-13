@@ -208,6 +208,25 @@
       </div>
     </div>
 
+    <!-- Depósito (Stripe) -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="deposito">
+      <p class="font-serif text-lg font-medium mb-1">Depósito de reserva</p>
+      <p class="text-sm text-base-content/60 mb-4">
+        Requiere un depósito reembolsable al reservar. Solo se cobra si Stripe está configurado en el servidor.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+        <label class="label cursor-pointer justify-start gap-3">
+          <input type="checkbox" formControlName="activo" class="toggle toggle-primary" />
+          <span class="label-text text-sm">Exigir depósito al reservar</span>
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Importe por persona (€)</span>
+          <input type="number" min="0" step="0.5" formControlName="por_persona"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+        </label>
+      </div>
+    </div>
+
     <!-- Galería -->
     <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
       <div class="flex items-center justify-between mb-4">

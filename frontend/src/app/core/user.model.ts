@@ -93,6 +93,14 @@ export interface SettingsSocial {
   tiktok: string | null;
 }
 
+export interface SettingsDeposito {
+  /** EFFECTIVE flag: only true when admin enabled it AND Stripe is configured. */
+  activo: boolean;
+  por_persona: number;
+  /** Publishable key for Stripe.js (public settings only). */
+  stripe_key?: string | null;
+}
+
 /** Public + admin settings shape (full SettingResource). */
 export interface Settings {
   nombre_restaurante: string;
@@ -107,4 +115,5 @@ export interface Settings {
   coords: SettingsCoords;
   social: SettingsSocial;
   galeria: string[];
+  deposito?: SettingsDeposito;
 }

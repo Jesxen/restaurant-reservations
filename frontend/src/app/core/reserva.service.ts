@@ -13,13 +13,18 @@ interface ResourceResponse {
   message: string;
 }
 
+/** POST /api/reservas response — adds top-level `client_secret` for Stripe. */
+export interface CreateReservaResponse extends ResourceResponse {
+  client_secret: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReservaService {
   private readonly http = inject(HttpClient);
   private readonly api = environment.apiUrl;
 
-  create(reserva: NuevaReserva): Observable<ResourceResponse> {
-    return this.http.post<ResourceResponse>(`${this.api}/reservas`, reserva);
+  create(reserva: NuevaReserva): Observable<CreateReservaResponse> {
+    return this.http.post<CreateReservaResponse>(`${this.api}/reservas`, reserva);
   }
 
   misReservas(): Observable<Reserva[]> {

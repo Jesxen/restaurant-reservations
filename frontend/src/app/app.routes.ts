@@ -64,6 +64,8 @@ export const routes: Routes = [
       { path: 'mesas', title: 'Mesas · Admin', loadComponent: () => import('./pages/admin/mesas/admin-mesas').then((m) => m.AdminMesas) },
       { path: 'menu', title: 'Menú · Admin', loadComponent: () => import('./pages/admin/menu/admin-menu').then((m) => m.AdminMenu) },
       { path: 'cierres', title: 'Cierres · Admin', loadComponent: () => import('./pages/admin/cierres/admin-cierres').then((m) => m.AdminCierres) },
+      { path: 'reviews', title: 'Reseñas · Admin', loadComponent: () => import('./pages/admin/reviews/admin-reviews').then((m) => m.AdminReviews) },
+      { path: 'waitlist', title: 'Lista de espera · Admin', loadComponent: () => import('./pages/admin/waitlist/admin-waitlist').then((m) => m.AdminWaitlist) },
       { path: 'usuarios', canActivate: [adminGuard], title: 'Usuarios · Admin', loadComponent: () => import('./pages/admin/usuarios/admin-usuarios').then((m) => m.AdminUsuarios) },
       { path: 'ajustes', canActivate: [adminGuard], title: 'Ajustes · Admin', loadComponent: () => import('./pages/admin/ajustes/admin-ajustes').then((m) => m.AdminAjustes) },
     ],

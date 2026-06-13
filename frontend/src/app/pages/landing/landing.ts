@@ -6,6 +6,9 @@ import { MenuService } from '../../core/menu.service';
 import { Categoria } from '../../core/menu.model';
 import { RevealDirective } from '../../core/reveal.directive';
 import { SettingsService } from '../../core/settings.service';
+import { ReviewService } from '../../core/review.service';
+import { Review, ReviewResumen } from '../../core/review.model';
+import { TranslatePipe } from '../../core/translate.pipe';
 
 const FALLBACK_IMAGES = [
   'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg',
@@ -22,12 +25,13 @@ L.Icon.Default.mergeOptions({
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, RevealDirective],
+  imports: [RouterLink, RevealDirective, TranslatePipe],
   templateUrl: './landing.html',
 })
 export class Landing implements OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
   private readonly settingsService = inject(SettingsService);
+  private readonly reviewService = inject(ReviewService);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly mapEl = viewChild<ElementRef<HTMLDivElement>>('mapEl');
@@ -35,6 +39,11 @@ export class Landing implements OnInit, OnDestroy {
   protected readonly categorias = signal<Categoria[]>([]);
   protected readonly loadingMenu = signal(true);
   protected readonly settings = this.settingsService.settings;
+
+  protected readonly reviews = signal<Review[]>([]);
+  protected readonly reviewResumen = signal<ReviewResumen | null>(null);
+  protected readonly loadingReviews = signal(true);
+  protected readonly stars = [1, 2, 3, 4, 5];
 
   /** Gallery images from settings, falling back to the curated defaults. */
   protected readonly images = computed(() => {
@@ -85,6 +94,15 @@ export class Landing implements OnInit, OnDestroy {
         this.loadingMenu.set(false);
       },
       error: () => this.loadingMenu.set(false),
+    });
+
+    this.reviewService.reviews().subscribe({
+      next: (res) => {
+        this.reviews.set(res.data);
+        this.reviewResumen.set(res.meta);
+        this.loadingReviews.set(false);
+      },
+      error: () => this.loadingReviews.set(false),
     });
 
     let i = 0;

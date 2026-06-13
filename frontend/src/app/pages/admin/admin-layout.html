@@ -46,6 +46,14 @@
            class="flex items-center gap-3 px-3 py-2.5 rounded-field text-base-content/70 hover:bg-base-300/60 hover:text-primary transition-colors text-sm font-medium tracking-wide">
           <span>⊘</span> Cierres
         </a>
+        <a routerLink="/admin/reviews" routerLinkActive="!bg-base-300 !text-primary border-l-2 !border-primary"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-field text-base-content/70 hover:bg-base-300/60 hover:text-primary transition-colors text-sm font-medium tracking-wide">
+          <span>★</span> Reseñas
+        </a>
+        <a routerLink="/admin/waitlist" routerLinkActive="!bg-base-300 !text-primary border-l-2 !border-primary"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-field text-base-content/70 hover:bg-base-300/60 hover:text-primary transition-colors text-sm font-medium tracking-wide">
+          <span>☰</span> Lista de espera
+        </a>
 
         @if (auth.isAdmin()) {
           <div class="px-3 pt-4 pb-1"><span class="eyebrow !text-base-content/40">Administración</span></div>

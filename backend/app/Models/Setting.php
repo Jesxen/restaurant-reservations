@@ -37,6 +37,9 @@ class Setting extends Model
         'tiktok_url',
         // Gallery.
         'galeria',
+        // Deposits (Stripe).
+        'deposito_activo',
+        'deposito_por_persona',
     ];
 
     protected $casts = [
@@ -48,6 +51,8 @@ class Setting extends Model
         'max_personas_online' => 'integer',
         'dias_cierre' => 'array',
         'galeria' => 'array',
+        'deposito_activo' => 'boolean',
+        'deposito_por_persona' => 'decimal:2',
         'lat' => 'decimal:7',
         'lng' => 'decimal:7',
     ];
@@ -78,5 +83,21 @@ class Setting extends Model
     public function antelacionMinHoras(): int
     {
         return (int) ($this->antelacion_min_horas ?? 1);
+    }
+
+    /**
+     * Whether a deposit must actually be collected: enabled by the admin AND
+     * a non-zero per-person amount is set. (Stripe availability is checked
+     * separately by StripeService so the API can still degrade gracefully.)
+     */
+    public function depositoActivo(): bool
+    {
+        return (bool) $this->deposito_activo && (float) $this->deposito_por_persona > 0;
+    }
+
+    /** Deposit amount per person, in the configured currency. */
+    public function depositoPorPersona(): float
+    {
+        return (float) ($this->deposito_por_persona ?? 0);
     }
 }

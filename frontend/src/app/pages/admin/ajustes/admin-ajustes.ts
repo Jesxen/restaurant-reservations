@@ -73,6 +73,10 @@ export class AdminAjustes implements OnInit {
       facebook: [''],
       tiktok: [''],
     }),
+    deposito: this.fb.nonNullable.group({
+      activo: [false],
+      por_persona: [0, [Validators.min(0)]],
+    }),
     galeria: this.fb.array<FormControl<string>>([]),
   });
 
@@ -113,6 +117,10 @@ export class AdminAjustes implements OnInit {
         instagram: s.social.instagram ?? '',
         facebook: s.social.facebook ?? '',
         tiktok: s.social.tiktok ?? '',
+      },
+      deposito: {
+        activo: s.deposito?.activo ?? false,
+        por_persona: s.deposito?.por_persona ?? 0,
       },
     });
     this.diasCierre.set([...s.dias_cierre]);
@@ -180,6 +188,10 @@ export class AdminAjustes implements OnInit {
         instagram: raw.social.instagram || null,
         facebook: raw.social.facebook || null,
         tiktok: raw.social.tiktok || null,
+      },
+      deposito: {
+        activo: raw.deposito.activo,
+        por_persona: raw.deposito.por_persona,
       },
       galeria: raw.galeria.filter((u) => u.trim().length > 0),
     };
