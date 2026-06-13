@@ -4,6 +4,9 @@
 .idea/
 .vscode/
 
+# Personal notes (not part of the project)
+PENDIENTE-DEPLOY.md
+
 # OS files
 .DS_Store
 Thumbs.db
