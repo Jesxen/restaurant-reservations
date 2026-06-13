@@ -21,6 +21,23 @@ dashboard. Rebuilt from a legacy PHP/Blade demo into a modern, decoupled archite
 - **Admin panel** (`/admin`) — KPI dashboard, reservation management (filter/search, change status, assign table), table/menu/user CRUD, blackout-date manager, and a fully customizable **settings** panel (branding/colors, contact, social, map coords, slot config, gallery, closed days).
 - **Security** — per-route rate limiting, security headers, strong password policy, strict mass-assignment whitelisting, locked CORS origin, policy-based authorization. Backend covered by a PHPUnit feature suite.
 
+## Screenshots
+
+| Home | Reservar | Contacto |
+|------|----------|----------|
+| ![Home](docs/screenshots/home.png) | ![Reservar](docs/screenshots/reservar.png) | ![Contacto](docs/screenshots/contacto.png) |
+
+| Mi cuenta | Admin · Dashboard | Admin · Reservas |
+|-----------|-------------------|------------------|
+| ![Cuenta](docs/screenshots/cuenta.png) | ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Reservas](docs/screenshots/admin-reservas.png) |
+
+| Admin · Ajustes (customization) | Login |
+|---------------------------------|-------|
+| ![Ajustes](docs/screenshots/admin-ajustes.png) | ![Login](docs/screenshots/login.png) |
+
+> Screenshots are generated with Playwright against the running app:
+> `node frontend/tools/screenshots.mjs` (outputs to `docs/screenshots/`).
+
 ## Architecture
 
 ```

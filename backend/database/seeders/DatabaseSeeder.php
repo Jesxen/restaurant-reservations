@@ -75,9 +75,10 @@ class DatabaseSeeder extends Seeder
 
             // Gallery.
             'galeria' => [
-                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0',
-                'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
+                'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg',
+                'https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg',
+                'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg',
+                'https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg',
             ],
         ]);
 
