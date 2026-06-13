@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { DashboardData } from './admin.model';
+import { BlackoutDate, DashboardData, NuevoBlackout } from './admin.model';
 import { Categoria, Plato } from './menu.model';
 import { Mesa, Reserva } from './reserva.model';
 import { NuevoUsuario, Settings, User } from './user.model';
@@ -89,6 +89,21 @@ export class AdminService {
   }
   updateSettings(payload: Settings): Observable<Settings> {
     return this.http.patch<{ data: Settings }>(`${this.api}/settings`, payload).pipe(map((r) => r.data));
+  }
+
+  // --- Blackout dates (días de cierre puntuales) ---
+  blackoutDates(): Observable<BlackoutDate[]> {
+    return this.http
+      .get<{ data: BlackoutDate[] }>(`${this.api}/blackout-dates`)
+      .pipe(map((r) => r.data));
+  }
+  createBlackout(payload: NuevoBlackout): Observable<BlackoutDate> {
+    return this.http
+      .post<{ data: BlackoutDate }>(`${this.api}/blackout-dates`, payload)
+      .pipe(map((r) => r.data));
+  }
+  deleteBlackout(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/blackout-dates/${id}`);
   }
 
   // --- Mesas ---

@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'role' => $this->role,
             'activo' => $this->activo,
+            'email_verified' => $this->email_verified_at !== null,
             'reservas_count' => $this->whenCounted('reservas'),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

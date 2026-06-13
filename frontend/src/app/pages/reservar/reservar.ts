@@ -1,14 +1,16 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ReservaService } from '../../core/reserva.service';
 import { AuthService } from '../../core/auth.service';
-import { ApiValidationError, Disponibilidad } from '../../core/reserva.model';
+import { ApiValidationError } from '../../core/reserva.model';
+import { SlotPicker } from '../../shared/slot-picker';
 
 @Component({
   selector: 'app-reservar',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, SlotPicker],
   templateUrl: './reservar.html',
 })
 export class Reservar implements OnInit {
@@ -19,7 +21,9 @@ export class Reservar implements OnInit {
   protected readonly submitting = signal(false);
   protected readonly successMessage = signal<string | null>(null);
   protected readonly serverErrors = signal<Record<string, string[]>>({});
-  protected readonly disponibilidad = signal<Disponibilidad | null>(null);
+
+  /** Today (YYYY-MM-DD) used as the min for the date input. */
+  protected readonly minDate = new Date().toISOString().slice(0, 10);
 
   protected readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -28,6 +32,11 @@ export class Reservar implements OnInit {
     hora: ['', [Validators.required]],
     personas: [2, [Validators.required, Validators.min(1), Validators.max(255)]],
     notas: [''],
+  });
+
+  /** Reactive mirror of the date control, fed to the slot picker. */
+  protected readonly fecha = toSignal(this.form.controls.fecha.valueChanges, {
+    initialValue: this.form.controls.fecha.value,
   });
 
   ngOnInit(): void {
@@ -41,17 +50,16 @@ export class Reservar implements OnInit {
     return this.serverErrors()[field] ?? [];
   }
 
-  /** Live availability check when date + time are set. */
-  protected checkAvailability(): void {
-    const { fecha, hora } = this.form.getRawValue();
-    if (!fecha || !hora) {
-      this.disponibilidad.set(null);
-      return;
-    }
-    this.reservaService.disponibilidad(fecha, hora).subscribe({
-      next: (d) => this.disponibilidad.set(d),
-      error: () => this.disponibilidad.set(null),
-    });
+  /** Whether the slot field should render its error state. */
+  protected get horaInvalid(): boolean {
+    const c = this.form.controls.hora;
+    return c.touched && c.invalid;
+  }
+
+  /** Set the chosen slot back into the reactive form. */
+  protected onHoraChange(hora: string): void {
+    this.form.controls.hora.setValue(hora);
+    this.form.controls.hora.markAsTouched();
   }
 
   protected submit(): void {
@@ -68,7 +76,6 @@ export class Reservar implements OnInit {
       next: (res) => {
         this.successMessage.set(res.message);
         this.form.reset({ personas: 2, nombre: this.auth.user()?.name ?? '', email: this.auth.user()?.email ?? '', fecha: '', hora: '', notas: '' });
-        this.disponibilidad.set(null);
         this.submitting.set(false);
       },
       error: (err: HttpErrorResponse) => {

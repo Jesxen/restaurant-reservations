@@ -26,6 +26,10 @@ class AuthController extends Controller
             'role' => 'client',
         ]);
 
+        // Send the verification email. We do NOT block login on verification
+        // (portfolio app stays usable); the user resource exposes email_verified.
+        $user->sendEmailVerificationNotification();
+
         return $this->tokenResponse($user, 201);
     }
 

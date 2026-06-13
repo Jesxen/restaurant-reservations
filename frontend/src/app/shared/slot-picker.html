@@ -1,0 +1,33 @@
+@if (!fecha()) {
+  <p class="text-sm text-base-content/50 py-2">Selecciona una fecha para ver los horarios disponibles.</p>
+} @else if (loading()) {
+  <div class="flex items-center gap-2 py-2 text-sm text-base-content/60">
+    <span class="loading loading-spinner loading-sm text-primary"></span> Cargando horarios…
+  </div>
+} @else if (horarios(); as h) {
+  @if (!h.abierto) {
+    <div class="alert bg-base-200 border border-base-300 rounded-box py-2" role="status">
+      <span class="text-sm">{{ h.motivo_cierre || 'Cerrado en la fecha seleccionada.' }}</span>
+    </div>
+  } @else if (h.slots.length === 0) {
+    <p class="text-sm text-base-content/60 py-2">No quedan horarios disponibles para esta fecha.</p>
+  } @else {
+    <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Horarios disponibles"
+         [class.ring-1]="invalid()" [class.ring-error]="invalid()" [class.rounded-field]="invalid()" [class.p-2]="invalid()">
+      @for (s of h.slots; track s.hora) {
+        <button type="button" (click)="select(s.hora)" [disabled]="!s.disponible"
+                role="radio" [attr.aria-checked]="hora() === s.hora"
+                [title]="s.disponible ? s.plazas_disponibles + ' plazas disponibles' : 'Completo'"
+                class="btn btn-sm rounded-field tracking-wide tabular-nums transition-colors disabled:opacity-40"
+                [class.btn-primary]="hora() === s.hora"
+                [class.btn-outline]="hora() !== s.hora">
+          {{ s.hora }}
+          <span class="text-[0.65rem] font-normal opacity-70 ml-1">({{ s.plazas_disponibles }})</span>
+        </button>
+      }
+    </div>
+    @if (invalid()) {
+      <p class="text-error text-xs mt-1">Selecciona un horario</p>
+    }
+  }
+}

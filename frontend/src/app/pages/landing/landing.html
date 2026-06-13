@@ -82,7 +82,7 @@
 <!-- Galería -->
 <section appReveal class="max-w-6xl mx-auto px-6 py-20">
   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-[180px] md:auto-rows-[200px]">
-    @for (img of images; track img; let i = $index) {
+    @for (img of images(); track img; let i = $index) {
       <figure class="rounded-box overflow-hidden border border-base-300"
               [class.row-span-2]="i === 0" [class.col-span-2]="i === 0">
         <img [src]="img" alt="Plato" class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 hover:scale-105 transition-all duration-700" />
@@ -99,11 +99,12 @@
       <h2 class="font-serif text-4xl font-medium tracking-tight mt-2">Te esperamos en La Laguna</h2>
       <div class="rule-gold w-20 my-5"></div>
       <p class="text-base-content/70 leading-relaxed mb-6 max-w-md">
-        San Cristóbal de La Laguna, Tenerife. Un espacio íntimo en el casco histórico,
+        {{ settings().contacto.direccion || 'San Cristóbal de La Laguna, Tenerife' }}. Un espacio íntimo en el casco histórico,
         Patrimonio de la Humanidad, para una velada inolvidable.
       </p>
       <dl class="space-y-2 text-sm mb-8">
-        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Horario</dt><dd class="text-base-content/75">Mar–Dom · 13:00–16:00 / 20:00–23:30</dd></div>
+        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Comida</dt><dd class="text-base-content/75">{{ settings().horarios.comida }}</dd></div>
+        <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Cena</dt><dd class="text-base-content/75">{{ settings().horarios.cena }}</dd></div>
         <div class="flex gap-3"><dt class="eyebrow w-24 shrink-0 pt-0.5">Reservas</dt><dd class="text-base-content/75">Recomendado reservar con antelación</dd></div>
       </dl>
       <a routerLink="/reservar" class="btn btn-primary rounded-field tracking-wide shadow-warm">Reservar ahora</a>

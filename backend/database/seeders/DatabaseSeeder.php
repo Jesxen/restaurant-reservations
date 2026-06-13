@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BlackoutDate;
 use App\Models\Categoria;
 use App\Models\Mesa;
 use App\Models\Plato;
@@ -47,6 +48,47 @@ class DatabaseSeeder extends Seeder
             'nombre_restaurante' => 'Restaurante La Laguna',
             'aforo' => null, // derive from active tables
             'ticket_medio' => 38.00,
+
+            // Booking config.
+            'intervalo_slots' => 30,
+            'antelacion_min_horas' => 1,
+            'max_personas_online' => 20,
+            'dias_cierre' => [1], // closed on Mondays
+
+            // Branding.
+            'logo_url' => null,
+            'color_primario' => '#7c2d12',
+            'color_acento' => '#f59e0b',
+
+            // Contact (values previously hardcoded in the app).
+            'email_contacto' => 'reservas@laguna.com',
+            'telefono' => '+34 922 000 000',
+            'direccion' => 'Calle La Carrera, 1',
+            'ciudad' => 'San Cristóbal de La Laguna, Tenerife',
+            'lat' => 28.4874,
+            'lng' => -16.3159,
+
+            // Social.
+            'instagram_url' => 'https://instagram.com/restaurantelaguna',
+            'facebook_url' => 'https://facebook.com/restaurantelaguna',
+            'tiktok_url' => null,
+
+            // Gallery.
+            'galeria' => [
+                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0',
+                'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
+            ],
+        ]);
+
+        // --- Blackout dates -----------------------------------------------
+        BlackoutDate::create([
+            'fecha' => Carbon::create(Carbon::now()->year, 12, 25)->toDateString(),
+            'motivo' => 'Navidad',
+        ]);
+        BlackoutDate::create([
+            'fecha' => Carbon::create(Carbon::now()->year, 1, 1)->addYear()->toDateString(),
+            'motivo' => 'Año Nuevo',
         ]);
 
         // --- Mesas ---------------------------------------------------------

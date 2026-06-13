@@ -12,30 +12,43 @@
         <span class="text-primary text-xl">📍</span>
         <div>
           <p class="font-medium">Dirección</p>
-          <p class="text-base-content/70 text-sm">{{ direccion }}</p>
+          <p class="text-base-content/70 text-sm">{{ direccion() }}</p>
         </div>
       </div>
       <div class="flex items-start gap-4">
         <span class="text-primary text-xl">📞</span>
         <div>
           <p class="font-medium">Teléfono</p>
-          <a [href]="'tel:' + telefono" class="text-base-content/70 text-sm hover:text-primary">{{ telefono }}</a>
+          <a [href]="'tel:' + telefono()" class="text-base-content/70 text-sm hover:text-primary">{{ telefono() }}</a>
         </div>
       </div>
       <div class="flex items-start gap-4">
         <span class="text-primary text-xl">✉️</span>
         <div>
           <p class="font-medium">Email</p>
-          <a [href]="'mailto:' + email" class="text-base-content/70 text-sm hover:text-primary">{{ email }}</a>
+          <a [href]="'mailto:' + email()" class="text-base-content/70 text-sm hover:text-primary">{{ email() }}</a>
         </div>
       </div>
       <div class="flex items-start gap-4">
         <span class="text-primary text-xl">🕐</span>
         <div>
           <p class="font-medium">Horario</p>
-          <p class="text-base-content/70 text-sm">{{ horario }}</p>
+          <p class="text-base-content/70 text-sm">{{ horario() }}</p>
         </div>
       </div>
+      @if (redes().length) {
+        <div class="flex items-start gap-4">
+          <span class="text-primary text-xl">🔗</span>
+          <div>
+            <p class="font-medium">Síguenos</p>
+            <div class="flex gap-4 mt-1">
+              @for (r of redes(); track r.url) {
+                <a [href]="r.url" target="_blank" rel="noopener" class="text-base-content/70 text-sm hover:text-primary">{{ r.label }}</a>
+              }
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Formulario -->

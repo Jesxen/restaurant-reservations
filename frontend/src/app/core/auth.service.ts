@@ -2,7 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, firstValueFrom, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthResponse, Credentials, RegisterData, User } from './user.model';
+import {
+  AuthResponse,
+  Credentials,
+  RegisterData,
+  ResetPasswordPayload,
+  User,
+} from './user.model';
 
 const TOKEN_KEY = 'rl_token';
 
@@ -49,6 +55,24 @@ export class AuthService {
     return this.http
       .post<AuthResponse>(`${this.api}/register`, data)
       .pipe(tap((res) => this.setSession(res)));
+  }
+
+  /** Request a password reset email (POST /api/forgot-password). */
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.api}/forgot-password`, { email });
+  }
+
+  /** Set a new password from a reset token (POST /api/reset-password). */
+  resetPassword(payload: ResetPasswordPayload): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.api}/reset-password`, payload);
+  }
+
+  /** Resend the email verification notification (auth required). */
+  resendVerification(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.api}/email/verification-notification`,
+      {},
+    );
   }
 
   logout(): void {

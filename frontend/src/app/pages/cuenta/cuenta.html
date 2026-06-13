@@ -9,6 +9,26 @@
   </div>
   <div class="rule-gold w-24 mb-10"></div>
 
+  @if (auth.user()?.email_verified === false) {
+    <div class="alert bg-base-200 border border-base-300 rounded-box mb-8 flex-col sm:flex-row sm:items-center gap-3" role="status">
+      <span class="text-sm flex-1">
+        <span class="font-medium">Verifica tu correo.</span>
+        Te hemos enviado un enlace de verificación a {{ auth.user()?.email }}.
+      </span>
+      <div class="flex items-center gap-3">
+        @if (resentMessage()) { <span class="text-success text-xs">{{ resentMessage() }}</span> }
+        <button class="btn btn-sm btn-outline rounded-field tracking-wide" (click)="reenviarVerificacion()" [disabled]="resending()">
+          @if (resending()) { <span class="loading loading-spinner loading-xs"></span> }
+          Reenviar
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (editMessage()) {
+    <div class="alert alert-success rounded-box mb-8" role="status"><span class="font-medium">{{ editMessage() }}</span></div>
+  }
+
   <h2 class="font-serif text-2xl font-medium mb-6">Mis reservas</h2>
 
   @if (loading()) {
@@ -45,13 +65,19 @@
                 <span class="size-1.5 rounded-full bg-current opacity-70"></span>
                 {{ label(r.estado) }}
               </span>
-              @if (r.cancelable) {
-                <button class="btn btn-ghost btn-xs text-error hover:bg-error/10 tracking-wide"
-                        (click)="cancelar(r)" [disabled]="canceling() === r.id">
-                  @if (canceling() === r.id) { <span class="loading loading-spinner loading-xs"></span> }
-                  Cancelar
-                </button>
-              }
+              <div class="flex items-center gap-1">
+                @if (editable(r)) {
+                  <button class="btn btn-ghost btn-xs text-primary hover:bg-primary/10 tracking-wide"
+                          (click)="abrirEditar(r)">Editar</button>
+                }
+                @if (r.cancelable) {
+                  <button class="btn btn-ghost btn-xs text-error hover:bg-error/10 tracking-wide"
+                          (click)="cancelar(r)" [disabled]="canceling() === r.id">
+                    @if (canceling() === r.id) { <span class="loading loading-spinner loading-xs"></span> }
+                    Cancelar
+                  </button>
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -59,3 +85,61 @@
     </div>
   }
 </div>
+
+<!-- Edit reservation modal -->
+@if (editing(); as r) {
+  <div class="modal modal-open" role="dialog" aria-modal="true" aria-label="Editar reserva">
+    <div class="modal-box bg-base-100 border border-base-300 rounded-box shadow-warm-lg max-w-lg">
+      <p class="eyebrow">Modificar</p>
+      <h3 class="font-serif text-2xl font-semibold tracking-tight mt-1 mb-1">Editar reserva</h3>
+      <div class="rule-gold w-16 mb-4"></div>
+
+      @if (r.estado === 'confirmada') {
+        <div class="alert bg-base-200 border border-base-300 rounded-box mb-4 py-2" role="status">
+          <span class="text-sm">Al modificar una reserva confirmada, volverá a quedar <strong>pendiente</strong> de re-confirmación.</span>
+        </div>
+      }
+      @if (errorsFor('general').length) {
+        <div class="alert alert-error rounded-box mb-4 py-2" role="alert"><span>{{ errorsFor('general')[0] }}</span></div>
+      }
+
+      <form [formGroup]="editForm" (ngSubmit)="guardarEdicion()" class="space-y-4" novalidate>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+          <input type="date" formControlName="fecha" [min]="minDate"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('fecha'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <div class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Hora</span>
+          <app-slot-picker [fecha]="editFecha()" [hora]="editForm.controls.hora.value" (horaChange)="onHoraChange($event)" [invalid]="horaInvalid" />
+          @for (m of errorsFor('hora'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </div>
+
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Número de personas</span>
+          <input type="number" min="1" formControlName="personas"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('personas'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Notas <span class="opacity-50 normal-case tracking-normal">(opcional)</span></span>
+          <textarea formControlName="notas" rows="2" placeholder="Alergias, preferencias…"
+                    class="textarea w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"></textarea>
+          @for (m of errorsFor('notas'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <div class="modal-action mt-6">
+          <button type="button" class="btn btn-ghost rounded-field tracking-wide" (click)="cerrarEditar()" [disabled]="saving()">Cancelar</button>
+          <button type="submit" class="btn btn-primary rounded-field tracking-wide shadow-warm" [disabled]="saving()">
+            @if (saving()) { <span class="loading loading-spinner loading-sm"></span> Guardando… }
+            @else { Guardar cambios }
+          </button>
+        </div>
+      </form>
+    </div>
+    <button type="button" class="modal-backdrop" (click)="cerrarEditar()" aria-label="Cerrar"></button>
+  </div>
+}

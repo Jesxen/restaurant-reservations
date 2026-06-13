@@ -1,5 +1,16 @@
 import { EstadoReserva } from './reserva.model';
 
+export interface BlackoutDate {
+  id: number;
+  fecha: string; // YYYY-MM-DD
+  motivo: string | null;
+}
+
+export interface NuevoBlackout {
+  fecha: string;
+  motivo?: string | null;
+}
+
 export interface DashboardData {
   reservas_hoy: number;
   comensales_hoy: number;

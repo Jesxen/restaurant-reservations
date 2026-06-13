@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Disponibilidad, NuevaReserva, Reserva } from './reserva.model';
+import { Disponibilidad, EditarReserva, NuevaReserva, Reserva } from './reserva.model';
 
 interface CollectionResponse {
   data: Reserva[];
@@ -30,6 +30,11 @@ export class ReservaService {
 
   cancelar(id: number): Observable<ResourceResponse> {
     return this.http.patch<ResourceResponse>(`${this.api}/reservas/${id}/cancelar`, {});
+  }
+
+  /** Client edits OWN reservation (PATCH /api/reservas/{id}). */
+  editar(id: number, payload: EditarReserva): Observable<ResourceResponse> {
+    return this.http.patch<ResourceResponse>(`${this.api}/reservas/${id}`, payload);
   }
 
   disponibilidad(fecha: string, hora: string): Observable<Disponibilidad> {

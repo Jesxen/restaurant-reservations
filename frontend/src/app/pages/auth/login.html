@@ -19,6 +19,9 @@
       <p class="eyebrow">Bienvenido de nuevo</p>
       <h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Iniciar sesión</h1>
 
+      @if (reset() === '1') {
+        <div class="alert alert-success rounded-box mb-5" role="status"><span>Contraseña restablecida. Ya puedes iniciar sesión.</span></div>
+      }
       @if (error()) {
         <div class="alert alert-error rounded-box mb-5" role="alert"><span>{{ error() }}</span></div>
       }
@@ -39,6 +42,7 @@
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
           @if (clientError('password'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
           @for (m of errorsFor('password'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          <a routerLink="/recuperar-password" class="text-xs text-primary mt-1.5 self-end hover:underline">¿Olvidaste tu contraseña?</a>
         </label>
         <button type="submit" class="btn btn-primary w-full rounded-field tracking-wide" [disabled]="submitting() || form.invalid">
           @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> Entrando… }

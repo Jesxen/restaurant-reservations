@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreReservaRequest;
+use App\Http\Requests\UpdateMisReservaRequest;
 use App\Http\Resources\ReservaResource;
+use App\Mail\NuevaReservaAdmin;
 use App\Mail\ReservaRecibida;
 use App\Models\Reserva;
+use App\Models\ReservaEvento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -31,7 +34,11 @@ class ReservaController extends Controller
 
         $reserva = Reserva::create($data);
 
+        // Confirmation to the customer.
         Mail::to($reserva->email)->send(new ReservaRecibida($reserva));
+
+        // Internal notification to the restaurant inbox.
+        Mail::to(config('mail.contact_to'))->send(new NuevaReservaAdmin($reserva));
 
         return (new ReservaResource($reserva))
             ->additional(['message' => "¡Reserva recibida! Tu localizador es {$reserva->localizador}. Te confirmaremos en breve."])
@@ -51,6 +58,43 @@ class ReservaController extends Controller
             ->get();
 
         return ReservaResource::collection($reservas);
+    }
+
+    /**
+     * Client edits their own reservation (fecha/hora/personas/notas) while it is
+     * still pendiente or confirmada. Editing a confirmada reservation resets it to
+     * pendiente (re-confirmation) and records a status event.
+     */
+    public function actualizar(UpdateMisReservaRequest $request, Reserva $reserva): JsonResponse
+    {
+        $this->authorize('update', $reserva);
+
+        $data = $request->validated();
+        $estadoAnterior = $reserva->estado;
+
+        // Re-confirmation: a confirmed reservation that changes goes back to pending.
+        if ($estadoAnterior === 'confirmada') {
+            $data['estado'] = 'pendiente';
+        }
+
+        $reserva->update($data);
+
+        $mensaje = 'Reserva actualizada.';
+
+        if ($estadoAnterior === 'confirmada' && $reserva->estado === 'pendiente') {
+            ReservaEvento::create([
+                'reserva_id' => $reserva->id,
+                'user_id' => $request->user()->id,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => 'pendiente',
+            ]);
+
+            $mensaje = 'Reserva actualizada. Al haber cambios, volverá a quedar pendiente de confirmación.';
+        }
+
+        return (new ReservaResource($reserva->load('mesa')))
+            ->additional(['message' => $mensaje])
+            ->response();
     }
 
     /**

@@ -2,14 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesReservaSlot;
 use App\Models\Reserva;
 use App\Models\Setting;
-use App\Services\AvailabilityService;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreReservaRequest extends FormRequest
 {
+    use ValidatesReservaSlot;
+
     public function authorize(): bool
     {
         return true;
@@ -20,12 +22,14 @@ class StoreReservaRequest extends FormRequest
      */
     public function rules(): array
     {
+        $maxPersonas = Setting::current()->max_personas_online ?: Reserva::MAX_PERSONAS;
+
         return [
             'nombre' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'email', 'max:150'],
             'fecha' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addDays(Reserva::VENTANA_RESERVA_DIAS)->toDateString()],
             'hora' => ['required', 'date_format:H:i'],
-            'personas' => ['required', 'integer', 'min:1', 'max:'.Reserva::MAX_PERSONAS],
+            'personas' => ['required', 'integer', 'min:1', 'max:'.$maxPersonas],
             'notas' => ['nullable', 'string', 'max:500'],
         ];
     }
@@ -35,6 +39,8 @@ class StoreReservaRequest extends FormRequest
      */
     public function messages(): array
     {
+        $maxPersonas = Setting::current()->max_personas_online ?: Reserva::MAX_PERSONAS;
+
         return [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.min' => 'El nombre debe tener al menos 2 caracteres.',
@@ -47,7 +53,7 @@ class StoreReservaRequest extends FormRequest
             'hora.date_format' => 'La hora no es válida.',
             'personas.required' => 'El número de personas es obligatorio.',
             'personas.min' => 'El número de personas debe ser al menos 1.',
-            'personas.max' => 'Para grupos de más de '.Reserva::MAX_PERSONAS.' personas, llámanos por teléfono y lo organizamos.',
+            'personas.max' => "Para grupos de más de {$maxPersonas} personas, llámanos por teléfono y lo organizamos.",
         ];
     }
 
@@ -55,13 +61,6 @@ class StoreReservaRequest extends FormRequest
     {
         $validator->after(function (Validator $validator) {
             if ($validator->errors()->isNotEmpty()) {
-                return;
-            }
-
-            // Requested time must fall within a configured service window.
-            if (! $this->dentroDelHorario($this->input('hora'))) {
-                $validator->errors()->add('hora', 'Esa hora está fuera de nuestro horario de servicio.');
-
                 return;
             }
 
@@ -80,53 +79,8 @@ class StoreReservaRequest extends FormRequest
                 return;
             }
 
-            // Availability / anti-overbooking.
-            $availability = app(AvailabilityService::class);
-            $personas = (int) $this->input('personas');
-            $left = $availability->seatsLeft($this->input('fecha'), $this->input('hora'));
-
-            if ($personas > $left) {
-                $validator->errors()->add(
-                    'personas',
-                    $left > 0
-                        ? "Sólo quedan {$left} plazas para esa fecha y hora."
-                        : 'No hay disponibilidad para esa fecha y hora.'
-                );
-            }
+            // Slot alignment, closed days, lead time and overlap-aware availability.
+            $this->validarSlot($validator);
         });
-    }
-
-    /**
-     * Whether the requested time falls within the comida or cena service window.
-     */
-    private function dentroDelHorario(string $hora): bool
-    {
-        $setting = Setting::current();
-        $minutos = $this->aMinutos($hora);
-
-        foreach ([['apertura_comida', 'cierre_comida'], ['apertura_cena', 'cierre_cena']] as [$abre, $cierra]) {
-            if (empty($setting->{$abre}) || empty($setting->{$cierra})) {
-                continue;
-            }
-
-            $inicio = $this->aMinutos((string) $setting->{$abre});
-            $fin = $this->aMinutos((string) $setting->{$cierra});
-
-            if ($minutos >= $inicio && $minutos <= $fin) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Normalise an "H:i" or "H:i:s" string to minutes since midnight.
-     */
-    private function aMinutos(string $time): int
-    {
-        [$h, $m] = array_pad(explode(':', $time), 2, '0');
-
-        return ((int) $h) * 60 + (int) $m;
     }
 }

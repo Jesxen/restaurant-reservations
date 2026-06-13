@@ -4,7 +4,7 @@
     <div class="navbar max-w-6xl mx-auto px-4 md:px-6">
       <div class="flex-1">
         <a routerLink="/" class="font-serif text-xl md:text-2xl font-semibold tracking-tight">
-          Restaurante La&nbsp;Laguna<span class="text-primary">.</span>
+          {{ settings().nombre_restaurante }}<span class="text-primary">.</span>
         </a>
       </div>
 
@@ -46,8 +46,24 @@
     <div class="max-w-6xl mx-auto px-6 py-10">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <p class="eyebrow !text-accent-content/60">San Cristóbal de La Laguna · Tenerife</p>
-          <p class="font-serif text-2xl font-semibold tracking-tight mt-1">Restaurante La Laguna<span class="text-primary">.</span></p>
+          <p class="eyebrow !text-accent-content/60">{{ settings().contacto.ciudad || 'San Cristóbal de La Laguna · Tenerife' }}</p>
+          <p class="font-serif text-2xl font-semibold tracking-tight mt-1">{{ settings().nombre_restaurante }}<span class="text-primary">.</span></p>
+          <div class="flex flex-col gap-0.5 mt-3 text-sm text-accent-content/70">
+            @if (settings().contacto.direccion) { <span>{{ settings().contacto.direccion }}</span> }
+            @if (settings().contacto.telefono) {
+              <a [href]="'tel:' + settings().contacto.telefono" class="hover:text-primary transition-colors">{{ settings().contacto.telefono }}</a>
+            }
+            @if (settings().contacto.email) {
+              <a [href]="'mailto:' + settings().contacto.email" class="hover:text-primary transition-colors">{{ settings().contacto.email }}</a>
+            }
+          </div>
+          @if (redes().length) {
+            <div class="flex items-center gap-4 mt-3 text-sm text-accent-content/70">
+              @for (r of redes(); track r.url) {
+                <a [href]="r.url" target="_blank" rel="noopener" class="hover:text-primary transition-colors">{{ r.label }}</a>
+              }
+            </div>
+          }
         </div>
         <div class="flex items-center gap-6 text-sm text-accent-content/70">
           <a routerLink="/privacidad" class="hover:text-primary transition-colors">Privacidad</a>
@@ -56,7 +72,7 @@
         </div>
       </div>
       <div class="rule-gold opacity-30 my-6"></div>
-      <p class="text-xs text-accent-content/50">© {{ year }} Restaurante La Laguna — Jesxen. Cocina canaria de autor.</p>
+      <p class="text-xs text-accent-content/50">© {{ year }} {{ settings().nombre_restaurante }} — Jesxen. Cocina canaria de autor.</p>
     </div>
   </footer>
 </div>

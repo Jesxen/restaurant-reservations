@@ -1,0 +1,53 @@
+<p class="eyebrow">Disponibilidad</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Días de cierre puntuales</h1>
+
+<div class="max-w-2xl space-y-6">
+  <!-- Add new -->
+  <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
+    <p class="font-serif text-lg font-medium mb-4">Añadir cierre</p>
+    <form [formGroup]="form" (ngSubmit)="crear()" class="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-4 sm:items-end" novalidate>
+      <label class="form-control">
+        <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+        <input type="date" formControlName="fecha" [min]="minDate"
+               [class.input-error]="(form.controls.fecha.touched && form.controls.fecha.invalid) || errorsFor('fecha').length"
+               class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+        @if (form.controls.fecha.touched && form.controls.fecha.invalid) { <p class="text-error text-xs mt-1">Selecciona una fecha</p> }
+        @for (m of errorsFor('fecha'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </label>
+      <label class="form-control">
+        <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Motivo <span class="opacity-50 normal-case tracking-normal">(opcional)</span></span>
+        <input type="text" formControlName="motivo" placeholder="Vacaciones, evento privado…"
+               class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+        @for (m of errorsFor('motivo'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </label>
+      <button type="submit" class="btn btn-primary rounded-field tracking-wide shadow-warm" [disabled]="saving()">
+        @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+        Añadir
+      </button>
+    </form>
+  </div>
+
+  <!-- List -->
+  <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
+    <p class="font-serif text-lg font-medium mb-4">Cierres programados</p>
+    @if (loading()) {
+      <div class="flex justify-center py-10"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+    } @else if (fechas().length === 0) {
+      <p class="text-base-content/60 text-sm py-4">No hay cierres puntuales programados.</p>
+    } @else {
+      <ul class="divide-y divide-base-300">
+        @for (item of fechas(); track item.id) {
+          <li class="flex items-center gap-4 py-3">
+            <span class="font-serif text-lg tabular-nums">{{ item.fecha }}</span>
+            <span class="flex-1 text-sm text-base-content/60">{{ item.motivo || 'Cerrado' }}</span>
+            <button class="btn btn-ghost btn-xs text-error hover:bg-error/10 tracking-wide"
+                    (click)="eliminar(item)" [disabled]="deleting() === item.id">
+              @if (deleting() === item.id) { <span class="loading loading-spinner loading-xs"></span> }
+              Eliminar
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

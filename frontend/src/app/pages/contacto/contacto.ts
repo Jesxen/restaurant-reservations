@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ContactoService } from '../../core/contacto.service';
+import { SettingsService, socialLinks } from '../../core/settings.service';
 import { ApiValidationError } from '../../core/reserva.model';
 
 @Component({
@@ -12,11 +13,20 @@ import { ApiValidationError } from '../../core/reserva.model';
 export class Contacto {
   private readonly fb = inject(FormBuilder);
   private readonly contacto = inject(ContactoService);
+  private readonly settingsService = inject(SettingsService);
 
-  protected readonly email = 'reservas@laguna.com';
-  protected readonly telefono = '+34 922 000 000';
-  protected readonly direccion = 'Calle La Carrera, 1 · San Cristóbal de La Laguna, Tenerife';
-  protected readonly horario = 'Mar–Dom · 13:00–16:00 y 20:00–23:30';
+  protected readonly settings = this.settingsService.settings;
+
+  protected readonly email = computed(() => this.settings().contacto.email ?? 'reservas@laguna.com');
+  protected readonly telefono = computed(() => this.settings().contacto.telefono ?? '+34 922 000 000');
+  protected readonly direccion = computed(
+    () => this.settings().contacto.direccion ?? 'San Cristóbal de La Laguna, Tenerife',
+  );
+  protected readonly horario = computed(() => {
+    const h = this.settings().horarios;
+    return `${h.comida} y ${h.cena}`;
+  });
+  protected readonly redes = computed(() => socialLinks(this.settings()));
 
   protected readonly enviando = signal(false);
   protected readonly enviado = signal(false);

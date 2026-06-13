@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BlackoutDateController;
 use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MesaController;
@@ -9,7 +10,10 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
@@ -19,8 +23,17 @@ use Illuminate\Support\Facades\Route;
 // ---------------------------------------------------------------------------
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
+Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:auth');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:auth');
+
+// Signed email verification link (opened from an email client, no bearer token).
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('verification.verify');
+
 Route::get('/menu', [MenuController::class, 'index']);
 Route::get('/disponibilidad', [AvailabilityController::class, 'show']);
+Route::get('/horarios', [HorarioController::class, 'index']);
 Route::post('/reservas', [ReservaController::class, 'store'])->middleware('throttle:reservas');
 Route::get('/settings', [SettingController::class, 'publicShow']);
 Route::post('/contacto', [ContactController::class, 'store'])->middleware('throttle:contacto');
@@ -32,12 +45,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:auth');
+
     Route::get('/mis-reservas', [ReservaController::class, 'misReservas']);
+    Route::patch('/reservas/{reserva}', [ReservaController::class, 'actualizar']);
     Route::patch('/reservas/{reserva}/cancelar', [ReservaController::class, 'cancelar']);
 });
 
 // ---------------------------------------------------------------------------
-// Staff + Admin (operations: reservations, tables, menu)
+// Staff + Admin (operations: reservations, tables, menu, blackout dates)
 // ---------------------------------------------------------------------------
 Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -50,6 +67,9 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::apiResource('mesas', MesaController::class)->except(['show']);
     Route::apiResource('categorias', CategoriaController::class)->except(['show']);
     Route::apiResource('platos', PlatoController::class)->except(['show']);
+    Route::apiResource('blackout-dates', BlackoutDateController::class)->parameters([
+        'blackout-dates' => 'blackoutDate',
+    ])->except(['show']);
 });
 
 // ---------------------------------------------------------------------------

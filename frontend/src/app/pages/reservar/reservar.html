@@ -41,28 +41,18 @@
           @for (m of errorsFor('email'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
         </label>
 
-        <div class="grid grid-cols-2 gap-4">
-          <label class="form-control w-full">
-            <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
-            <input type="date" formControlName="fecha" (change)="checkAvailability()"
-                   class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
-            @for (m of errorsFor('fecha'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
-          </label>
-          <label class="form-control w-full">
-            <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Hora</span>
-            <input type="time" formControlName="hora" (change)="checkAvailability()"
-                   class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
-            @for (m of errorsFor('hora'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
-          </label>
-        </div>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+          <input type="date" formControlName="fecha" [min]="minDate"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('fecha'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
 
-        @if (disponibilidad(); as d) {
-          <div class="text-sm flex items-center gap-2" [class.text-success]="d.disponible" [class.text-error]="!d.disponible">
-            <span class="size-1.5 rounded-full bg-current"></span>
-            @if (d.disponible) { {{ d.plazas_disponibles }} plazas disponibles a esa hora. }
-            @else { Sin disponibilidad a esa hora. }
-          </div>
-        }
+        <div class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Hora</span>
+          <app-slot-picker [fecha]="fecha()" [hora]="form.controls.hora.value" (horaChange)="onHoraChange($event)" [invalid]="horaInvalid" />
+          @for (m of errorsFor('hora'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </div>
 
         <label class="form-control w-full">
           <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Número de personas</span>

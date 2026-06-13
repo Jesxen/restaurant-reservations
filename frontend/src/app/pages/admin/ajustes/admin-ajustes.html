@@ -5,6 +5,7 @@
   <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
 } @else {
   <form [formGroup]="form" (ngSubmit)="guardar()" class="max-w-2xl space-y-6" novalidate>
+
     <!-- General -->
     <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
       <p class="font-serif text-lg font-medium mb-4">General</p>
@@ -37,8 +38,8 @@
     </div>
 
     <!-- Horarios -->
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
-      <p class="font-serif text-lg font-medium mb-4">Horarios y turnos</p>
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="horarios_detalle">
+      <p class="font-serif text-lg font-medium mb-4">Horarios</p>
       <div class="grid grid-cols-2 gap-4">
         <label class="form-control">
           <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Comida · apertura</span>
@@ -60,15 +61,173 @@
           <input type="time" formControlName="cierre_cena" class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
           @for (m of errorsFor('cierre_cena'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
         </label>
-        <label class="form-control col-span-2">
-          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Duración de turno (minutos)</span>
-          <input type="number" min="30" max="480" step="15" formControlName="duracion_turno"
-                 [class.input-error]="(form.controls.duracion_turno.touched && form.controls.duracion_turno.invalid) || errorsFor('duracion_turno').length"
+      </div>
+    </div>
+
+    <!-- Reservas -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="reservas">
+      <p class="font-serif text-lg font-medium mb-4">Reservas online</p>
+      <div class="grid grid-cols-2 gap-4">
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Intervalo entre turnos (min)</span>
+          <input type="number" min="5" max="240" step="5" formControlName="intervalo_slots"
                  class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
-          @if (form.controls.duracion_turno.touched && form.controls.duracion_turno.invalid) { <p class="text-error text-xs mt-1">Entre 30 y 480 minutos</p> }
-          @for (m of errorsFor('duracion_turno'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          @for (m of errorsFor('intervalo_slots'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Antelación mínima (horas)</span>
+          <input type="number" min="0" max="168" formControlName="antelacion_min_horas"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('antelacion_min_horas'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Máx. personas online</span>
+          <input type="number" min="1" max="255" formControlName="max_personas_online"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('max_personas_online'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Ventana de reserva (días)</span>
+          <input type="number" min="1" max="365" formControlName="ventana_dias"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('ventana_dias'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
         </label>
       </div>
+    </div>
+
+    <!-- Días de cierre -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
+      <p class="font-serif text-lg font-medium mb-1">Días de cierre semanal</p>
+      <p class="text-sm text-base-content/60 mb-4">Marca los días en que el restaurante no abre.</p>
+      <div class="flex flex-wrap gap-2">
+        @for (d of dias; track d.valor) {
+          <label class="cursor-pointer">
+            <input type="checkbox" class="peer sr-only" [checked]="esDiaCierre(d.valor)"
+                   (change)="toggleDia(d.valor, $any($event.target).checked)" />
+            <span class="btn btn-sm rounded-field tracking-wide btn-outline peer-checked:btn-primary peer-checked:btn-active">{{ d.etiqueta }}</span>
+          </label>
+        }
+      </div>
+      @for (m of errorsFor('dias_cierre'); track m) { <p class="text-error text-xs mt-2">{{ m }}</p> }
+    </div>
+
+    <!-- Branding -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="branding">
+      <p class="font-serif text-lg font-medium mb-4">Marca</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label class="form-control sm:col-span-2">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Logo (URL)</span>
+          <input type="url" formControlName="logo_url" placeholder="https://…"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('logo_url'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Color primario</span>
+          <input type="color" formControlName="color_primario" class="input w-full h-12 p-1 bg-base-100 border-base-300 rounded-field cursor-pointer" />
+          @for (m of errorsFor('color_primario'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Color de acento</span>
+          <input type="color" formControlName="color_acento" class="input w-full h-12 p-1 bg-base-100 border-base-300 rounded-field cursor-pointer" />
+          @for (m of errorsFor('color_acento'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+      </div>
+    </div>
+
+    <!-- Contacto -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="contacto">
+      <p class="font-serif text-lg font-medium mb-4">Contacto</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Email</span>
+          <input type="email" formControlName="email"
+                 [class.input-error]="form.controls.contacto.controls.email.touched && form.controls.contacto.controls.email.invalid"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (form.controls.contacto.controls.email.touched && form.controls.contacto.controls.email.invalid) { <p class="text-error text-xs mt-1">Correo no válido</p> }
+          @for (m of errorsFor('email'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Teléfono</span>
+          <input type="tel" formControlName="telefono"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('telefono'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control sm:col-span-2">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Dirección</span>
+          <input type="text" formControlName="direccion"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('direccion'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control sm:col-span-2">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Ciudad</span>
+          <input type="text" formControlName="ciudad"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('ciudad'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+      </div>
+    </div>
+
+    <!-- Coordenadas -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="coords">
+      <p class="font-serif text-lg font-medium mb-4">Coordenadas del mapa</p>
+      <div class="grid grid-cols-2 gap-4">
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Latitud</span>
+          <input type="number" step="0.000001" formControlName="lat"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('lat'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Longitud</span>
+          <input type="number" step="0.000001" formControlName="lng"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('lng'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+      </div>
+    </div>
+
+    <!-- Redes sociales -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6" formGroupName="social">
+      <p class="font-serif text-lg font-medium mb-4">Redes sociales</p>
+      <div class="grid grid-cols-1 gap-4">
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Instagram</span>
+          <input type="url" formControlName="instagram" placeholder="https://instagram.com/…"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Facebook</span>
+          <input type="url" formControlName="facebook" placeholder="https://facebook.com/…"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">TikTok</span>
+          <input type="url" formControlName="tiktok" placeholder="https://tiktok.com/@…"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Galería -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <p class="font-serif text-lg font-medium">Galería</p>
+        <button type="button" class="btn btn-sm btn-outline rounded-field tracking-wide" (click)="addImagen()">+ Añadir imagen</button>
+      </div>
+      @if (galeria.length === 0) {
+        <p class="text-sm text-base-content/60">No hay imágenes. Añade URLs de imágenes para la galería.</p>
+      } @else {
+        <div class="space-y-3" formArrayName="galeria">
+          @for (ctrl of galeria.controls; track $index) {
+            <div class="flex items-center gap-2">
+              <input type="url" [formControlName]="$index" placeholder="https://…"
+                     class="input flex-1 bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+              <button type="button" class="btn btn-ghost btn-sm text-error hover:bg-error/10" (click)="removeImagen($index)" aria-label="Eliminar imagen">✕</button>
+            </div>
+          }
+        </div>
+      }
+      @for (m of errorsFor('galeria'); track m) { <p class="text-error text-xs mt-2">{{ m }}</p> }
     </div>
 
     <div class="flex items-center gap-3">

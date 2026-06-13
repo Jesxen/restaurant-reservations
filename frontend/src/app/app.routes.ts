@@ -24,6 +24,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/registro').then((m) => m.Registro),
   },
   {
+    path: 'recuperar-password',
+    title: 'Recuperar contraseña · Restaurante La Laguna',
+    loadComponent: () => import('./pages/auth/recuperar').then((m) => m.Recuperar),
+  },
+  {
+    path: 'restablecer-password',
+    title: 'Restablecer contraseña · Restaurante La Laguna',
+    loadComponent: () => import('./pages/auth/restablecer').then((m) => m.Restablecer),
+  },
+  {
     path: 'privacidad',
     title: 'Privacidad · Restaurante La Laguna',
     loadComponent: () => import('./pages/legal/privacidad').then((m) => m.Privacidad),
@@ -53,6 +63,7 @@ export const routes: Routes = [
       { path: 'reservas', title: 'Reservas · Admin', loadComponent: () => import('./pages/admin/reservas/admin-reservas').then((m) => m.AdminReservas) },
       { path: 'mesas', title: 'Mesas · Admin', loadComponent: () => import('./pages/admin/mesas/admin-mesas').then((m) => m.AdminMesas) },
       { path: 'menu', title: 'Menú · Admin', loadComponent: () => import('./pages/admin/menu/admin-menu').then((m) => m.AdminMenu) },
+      { path: 'cierres', title: 'Cierres · Admin', loadComponent: () => import('./pages/admin/cierres/admin-cierres').then((m) => m.AdminCierres) },
       { path: 'usuarios', canActivate: [adminGuard], title: 'Usuarios · Admin', loadComponent: () => import('./pages/admin/usuarios/admin-usuarios').then((m) => m.AdminUsuarios) },
       { path: 'ajustes', canActivate: [adminGuard], title: 'Ajustes · Admin', loadComponent: () => import('./pages/admin/ajustes/admin-ajustes').then((m) => m.AdminAjustes) },
     ],

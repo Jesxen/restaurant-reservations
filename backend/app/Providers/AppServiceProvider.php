@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +26,38 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiters();
+        $this->configureNotificationUrls();
+    }
+
+    /**
+     * Point password-reset and email-verification links at the SPA frontend
+     * (FRONTEND_URL) rather than backend routes, since those pages live there.
+     */
+    private function configureNotificationUrls(): void
+    {
+        $frontend = rtrim((string) config('app.frontend_url'), '/');
+
+        // Password reset → frontend page that POSTs back to /api/reset-password.
+        ResetPassword::createUrlUsing(function ($notifiable, string $token) use ($frontend) {
+            $email = urlencode($notifiable->getEmailForPasswordReset());
+
+            return "{$frontend}/restablecer-password?token={$token}&email={$email}";
+        });
+
+        // Email verification → keep the signed backend URL, but wrap it so the
+        // frontend can present a friendly page that opens it.
+        VerifyEmail::createUrlUsing(function ($notifiable) {
+            $signed = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes((int) config('auth.verification.expire', 60)),
+                [
+                    'id' => $notifiable->getKey(),
+                    'hash' => sha1($notifiable->getEmailForVerification()),
+                ]
+            );
+
+            return $signed;
+        });
     }
 
     /**
