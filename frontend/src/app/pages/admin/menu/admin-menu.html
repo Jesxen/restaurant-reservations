@@ -1,0 +1,94 @@
+<p class="eyebrow">Cocina</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">La carta</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+  <!-- Nueva categoría -->
+  <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-5">
+    <p class="font-serif text-lg font-medium mb-3">Nueva categoría</p>
+    @if (categoriaErrorsFor('general').length) {
+      <div class="alert alert-error rounded-field py-2 mb-3" role="alert"><span>{{ categoriaErrorsFor('general')[0] }}</span></div>
+    }
+    <form [formGroup]="categoriaForm" (ngSubmit)="crearCategoria()" novalidate>
+      <div class="flex gap-2 items-start">
+        <div class="flex-1">
+          <input type="text" formControlName="nombre"
+                 [class.input-error]="(categoriaForm.controls.nombre.touched && categoriaForm.controls.nombre.invalid) || categoriaErrorsFor('nombre').length"
+                 class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Ej. Entrantes" />
+          @if (categoriaForm.controls.nombre.touched && categoriaForm.controls.nombre.invalid) { <p class="text-error text-xs mt-1">Mínimo 2 caracteres</p> }
+          @for (m of categoriaErrorsFor('nombre'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm rounded-field tracking-wide" [disabled]="categoriaForm.invalid">Añadir</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Nuevo plato -->
+  <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-5">
+    <p class="font-serif text-lg font-medium mb-3">Nuevo plato</p>
+    @if (platoErrorsFor('general').length) {
+      <div class="alert alert-error rounded-field py-2 mb-3" role="alert"><span>{{ platoErrorsFor('general')[0] }}</span></div>
+    }
+    <form [formGroup]="platoForm" (ngSubmit)="crearPlato()" class="grid grid-cols-2 gap-2" novalidate>
+      <select formControlName="categoria_id" class="select select-sm col-span-2 bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none">
+        @for (c of categorias(); track c.id) { <option [value]="c.id">{{ c.nombre }}</option> }
+      </select>
+      <div>
+        <input type="text" formControlName="nombre"
+               [class.input-error]="(platoForm.controls.nombre.touched && platoForm.controls.nombre.invalid) || platoErrorsFor('nombre').length"
+               class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Nombre" />
+        @if (platoForm.controls.nombre.touched && platoForm.controls.nombre.invalid) { <p class="text-error text-xs mt-1">Mínimo 2 caracteres</p> }
+        @for (m of platoErrorsFor('nombre'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </div>
+      <div>
+        <input type="number" min="0" step="0.5" formControlName="precio"
+               [class.input-error]="(platoForm.controls.precio.touched && platoForm.controls.precio.invalid) || platoErrorsFor('precio').length"
+               class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" placeholder="Precio €" />
+        @if (platoForm.controls.precio.touched && platoForm.controls.precio.invalid) { <p class="text-error text-xs mt-1">Precio obligatorio</p> }
+        @for (m of platoErrorsFor('precio'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </div>
+      <input type="text" formControlName="descripcion" class="input input-sm col-span-2 bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Descripción (opcional)" />
+      <button type="submit" class="btn btn-primary btn-sm col-span-2 rounded-field tracking-wide" [disabled]="platoForm.invalid">Añadir plato</button>
+    </form>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else {
+  <div class="space-y-10">
+    @for (cat of categorias(); track cat.id) {
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-serif text-2xl font-medium">{{ cat.nombre }}</h2>
+          <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" (click)="eliminarCategoria(cat)">Eliminar categoría</button>
+        </div>
+        <div class="rule-gold w-full opacity-50 mb-4"></div>
+
+        @if (cat.platos.length === 0) {
+          <p class="text-sm text-base-content/50">Sin platos.</p>
+        } @else {
+          <ul class="space-y-1">
+            @for (p of cat.platos; track p.id) {
+              <li class="flex items-center justify-between gap-4 py-2.5 px-3 rounded-field hover:bg-base-200/60 transition-colors">
+                <div class="min-w-0">
+                  <div class="flex items-baseline gap-2">
+                    <span class="font-serif text-lg" [class.line-through]="!p.disponible" [class.opacity-40]="!p.disponible">{{ p.nombre }}</span>
+                    <span class="font-serif text-lg font-semibold text-primary tabular-nums">{{ p.precio.toFixed(2) }} €</span>
+                  </div>
+                  @if (p.descripcion) { <p class="text-sm text-base-content/55 truncate">{{ p.descripcion }}</p> }
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" class="toggle toggle-primary toggle-sm" [checked]="p.disponible" (change)="toggleDisponible(p)" />
+                    <span class="text-xs text-base-content/55 hidden sm:inline">{{ p.disponible ? 'Visible' : 'Oculto' }}</span>
+                  </label>
+                  <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" (click)="eliminarPlato(p)">✕</button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </div>
+}

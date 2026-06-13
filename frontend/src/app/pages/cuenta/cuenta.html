@@ -1,0 +1,61 @@
+<div class="max-w-5xl mx-auto px-6 py-16">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-3">
+    <div>
+      <p class="eyebrow">Mi cuenta</p>
+      <h1 class="font-serif text-4xl font-semibold tracking-tight mt-1">Hola, {{ auth.user()?.name }}</h1>
+      <p class="text-base-content/60 text-sm mt-1">{{ auth.user()?.email }}</p>
+    </div>
+    <a routerLink="/reservar" class="btn btn-primary rounded-field tracking-wide shadow-warm">Nueva reserva</a>
+  </div>
+  <div class="rule-gold w-24 mb-10"></div>
+
+  <h2 class="font-serif text-2xl font-medium mb-6">Mis reservas</h2>
+
+  @if (loading()) {
+    <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+  } @else if (reservas().length === 0) {
+    <div class="rounded-box border border-base-300 bg-base-200 py-16 text-center">
+      <p class="text-base-content/60 mb-4">Aún no tienes reservas.</p>
+      <a routerLink="/reservar" class="btn btn-primary btn-sm rounded-field tracking-wide">Reservar mesa</a>
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (r of reservas(); track r.id) {
+        <div class="card bg-base-100 border border-base-300 rounded-box shadow-warm hover:shadow-warm-lg transition-shadow"
+             [class.border-l-2]="r.estado === 'confirmada' || r.estado === 'pendiente'"
+             [class.border-l-primary]="r.estado === 'confirmada' || r.estado === 'pendiente'">
+          <div class="card-body p-5 md:p-6 flex-row items-center gap-6">
+            <!-- Date block -->
+            <div class="text-center shrink-0 w-16">
+              <p class="font-serif text-4xl font-semibold leading-none tabular-nums">{{ r.fecha.slice(8, 10) }}</p>
+              <p class="text-xs text-base-content/50 mt-1 tabular-nums">{{ r.fecha.slice(0, 7) }}</p>
+            </div>
+            <div class="rule-gold w-px h-12 rotate-0" style="width:1px;background:var(--color-base-300);"></div>
+            <!-- Details -->
+            <div class="flex-1">
+              <p class="font-serif text-xl">{{ r.hora }} · {{ r.personas }} personas</p>
+              <p class="text-sm text-base-content/60">
+                @if (r.mesa) { Mesa {{ r.mesa.numero }} } @else { Mesa por asignar }
+                @if (r.notas) { · "{{ r.notas }}" }
+              </p>
+            </div>
+            <!-- Status + action -->
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <span class="badge badge-sm rounded-full font-medium tracking-wide gap-1.5" [ngClass]="badge(r.estado)">
+                <span class="size-1.5 rounded-full bg-current opacity-70"></span>
+                {{ label(r.estado) }}
+              </span>
+              @if (r.cancelable) {
+                <button class="btn btn-ghost btn-xs text-error hover:bg-error/10 tracking-wide"
+                        (click)="cancelar(r)" [disabled]="canceling() === r.id">
+                  @if (canceling() === r.id) { <span class="loading loading-spinner loading-xs"></span> }
+                  Cancelar
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

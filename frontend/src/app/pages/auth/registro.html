@@ -1,0 +1,64 @@
+<div class="max-w-md mx-auto px-6 py-16">
+  <div class="card bg-base-100 border border-base-300 rounded-box shadow-warm-lg">
+    <div class="card-body p-8">
+      <p class="eyebrow">Únete</p>
+      <h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Crear cuenta</h1>
+
+      @if (errorsFor('general').length) {
+        <div class="alert alert-error rounded-box mb-5" role="alert"><span>{{ errorsFor('general')[0] }}</span></div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4" novalidate>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Nombre</span>
+          <input type="text" formControlName="name" autocomplete="name" placeholder="Tu nombre"
+                 [class.input-error]="clientError('name') || errorsFor('name').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (clientError('name'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          @for (m of errorsFor('name'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Correo</span>
+          <input type="email" formControlName="email" autocomplete="email" placeholder="tu@correo.com"
+                 [class.input-error]="clientError('email') || errorsFor('email').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (clientError('email'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          @for (m of errorsFor('email'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Teléfono <span class="opacity-50 normal-case tracking-normal">(opcional)</span></span>
+          <input type="tel" formControlName="phone" autocomplete="tel" placeholder="+34 600 000 000"
+                 [class.input-error]="clientError('phone') || errorsFor('phone').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (clientError('phone'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          @for (m of errorsFor('phone'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Contraseña</span>
+          <input type="password" formControlName="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"
+                 [class.input-error]="clientError('password') || errorsFor('password').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (clientError('password'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          @for (m of errorsFor('password'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Repetir contraseña</span>
+          <input type="password" formControlName="password_confirmation" autocomplete="new-password" placeholder="••••••••"
+                 [class.input-error]="passwordMismatch() || clientError('password_confirmation') || errorsFor('password_confirmation').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (clientError('password_confirmation'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          @if (passwordMismatch()) { <p class="text-error text-xs mt-1">Las contraseñas no coinciden</p> }
+          @for (m of errorsFor('password_confirmation'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <button type="submit" class="btn btn-primary w-full rounded-field tracking-wide" [disabled]="submitting() || form.invalid">
+          @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> Creando… }
+          @else { Crear cuenta }
+        </button>
+      </form>
+
+      <p class="text-sm text-center mt-5 text-base-content/70">
+        ¿Ya tienes cuenta? <a routerLink="/login" class="text-primary font-medium">Inicia sesión</a>
+      </p>
+    </div>
+  </div>
+</div>

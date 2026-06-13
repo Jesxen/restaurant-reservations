@@ -1,0 +1,72 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, firstValueFrom, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { AuthResponse, Credentials, RegisterData, User } from './user.model';
+
+const TOKEN_KEY = 'rl_token';
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly http = inject(HttpClient);
+  private readonly api = environment.apiUrl;
+
+  private readonly _user = signal<User | null>(null);
+  private readonly _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+
+  readonly user = this._user.asReadonly();
+  readonly isAuthenticated = computed(() => this._token() !== null);
+  readonly isAdmin = computed(() => this._user()?.role === 'admin');
+  readonly isStaff = computed(() => {
+    const role = this._user()?.role;
+    return role === 'staff' || role === 'admin';
+  });
+
+  get token(): string | null {
+    return this._token();
+  }
+
+  /** Called once at startup (app initializer) to restore the session. */
+  async initSession(): Promise<void> {
+    if (!this._token()) {
+      return;
+    }
+    try {
+      const res = await firstValueFrom(this.http.get<{ data: User }>(`${this.api}/me`));
+      this._user.set(res.data);
+    } catch {
+      this.clearSession();
+    }
+  }
+
+  login(credentials: Credentials): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.api}/login`, credentials)
+      .pipe(tap((res) => this.setSession(res)));
+  }
+
+  register(data: RegisterData): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.api}/register`, data)
+      .pipe(tap((res) => this.setSession(res)));
+  }
+
+  logout(): void {
+    this.http.post(`${this.api}/logout`, {}).subscribe({
+      next: () => this.clearSession(),
+      error: () => this.clearSession(),
+    });
+  }
+
+  private setSession(res: AuthResponse): void {
+    localStorage.setItem(TOKEN_KEY, res.token);
+    this._token.set(res.token);
+    this._user.set(res.user);
+  }
+
+  private clearSession(): void {
+    localStorage.removeItem(TOKEN_KEY);
+    this._token.set(null);
+    this._user.set(null);
+  }
+}

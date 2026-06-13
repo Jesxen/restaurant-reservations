@@ -1,0 +1,94 @@
+<div class="max-w-6xl mx-auto px-6 py-16">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+    <div class="max-w-lg">
+      <p class="eyebrow">Reserva</p>
+      <h1 class="font-serif text-4xl md:text-5xl font-semibold tracking-tight mt-2">Reserva tu mesa</h1>
+      <div class="rule-gold w-20 my-5"></div>
+      <p class="text-base-content/70 leading-relaxed mb-8">
+        Selecciona fecha, horario y número de comensales. Confirmamos la disponibilidad al instante.
+      </p>
+
+      @if (!auth.isAuthenticated()) {
+        <div class="alert bg-base-200 border border-base-300 rounded-box mb-6">
+          <span class="text-sm">
+            ¿Tienes cuenta? <a routerLink="/login" class="text-primary font-medium">Inicia sesión</a>
+            para gestionar tus reservas.
+          </span>
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="alert alert-success rounded-box mb-6" role="status">
+          <span class="font-medium">{{ successMessage() }}</span>
+        </div>
+      }
+      @if (errorsFor('general').length) {
+        <div class="alert alert-error rounded-box mb-6" role="alert"><span>{{ errorsFor('general')[0] }}</span></div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" novalidate>
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Nombre</span>
+          <input type="text" formControlName="nombre" placeholder="Tu nombre"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 transition-colors" />
+          @for (m of errorsFor('nombre'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Correo electrónico</span>
+          <input type="email" formControlName="email" placeholder="tu@correo.com"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 transition-colors" />
+          @for (m of errorsFor('email'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <div class="grid grid-cols-2 gap-4">
+          <label class="form-control w-full">
+            <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Fecha</span>
+            <input type="date" formControlName="fecha" (change)="checkAvailability()"
+                   class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+            @for (m of errorsFor('fecha'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+          </label>
+          <label class="form-control w-full">
+            <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Hora</span>
+            <input type="time" formControlName="hora" (change)="checkAvailability()"
+                   class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+            @for (m of errorsFor('hora'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+          </label>
+        </div>
+
+        @if (disponibilidad(); as d) {
+          <div class="text-sm flex items-center gap-2" [class.text-success]="d.disponible" [class.text-error]="!d.disponible">
+            <span class="size-1.5 rounded-full bg-current"></span>
+            @if (d.disponible) { {{ d.plazas_disponibles }} plazas disponibles a esa hora. }
+            @else { Sin disponibilidad a esa hora. }
+          </div>
+        }
+
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Número de personas</span>
+          <input type="number" min="1" formControlName="personas"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @for (m of errorsFor('personas'); track m) { <span class="text-xs text-error mt-1">{{ m }}</span> }
+        </label>
+
+        <label class="form-control w-full">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Notas <span class="opacity-50 normal-case tracking-normal">(opcional)</span></span>
+          <textarea formControlName="notas" rows="2" placeholder="Alergias, preferencias…"
+                    class="textarea w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"></textarea>
+        </label>
+
+        <button type="submit" class="btn btn-primary w-full rounded-field tracking-wide shadow-warm hover:shadow-warm-lg transition-shadow" [disabled]="submitting()">
+          @if (submitting()) { <span class="loading loading-spinner loading-sm"></span> Enviando… }
+          @else { Confirmar reserva }
+        </button>
+      </form>
+    </div>
+
+    <div class="hidden md:block sticky top-24">
+      <figure class="rounded-box overflow-hidden border border-base-300 shadow-warm-lg">
+        <img src="https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg"
+             alt="Mesa del restaurante" class="w-full h-[34rem] object-cover" />
+      </figure>
+    </div>
+  </div>
+</div>

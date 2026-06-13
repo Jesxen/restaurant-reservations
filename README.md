@@ -1,27 +1,83 @@
-A simple and elegant web application for managing restaurant reservations. Built with **PHP**, **MySQL**, **Blade**, **TailwindCSS**, and **JavaScript**, it offers a modern, user-friendly experience.
+# Restaurante La Laguna — Plataforma de reservas
 
----
+Full-stack restaurant reservation platform: public landing page, client portal and admin
+dashboard. Rebuilt from a legacy PHP/Blade demo into a modern, decoupled architecture.
+
+| Layer    | Stack                                                                 |
+|----------|-----------------------------------------------------------------------|
+| Backend  | Laravel 13 · REST API · Sanctum (token auth) · MySQL 8                 |
+| Frontend | Angular 21 · standalone · signals · Tailwind v4 · DaisyUI 5 · Leaflet  |
 
 ## Features
 
-* Dynamic reservation form with instant confirmation
-* Reservation listing and management
-* Interactive map showing the restaurant location
-* Responsive design with TailwindCSS
-* Duplicate reservation prevention
+- **Landing page** — hero, dynamic menu from the API, gallery, location map (Leaflet).
+- **Auth + roles** — register/login (Sanctum Bearer tokens); `client` and `admin` roles.
+- **Reservations** — guest or authenticated; lifecycle `pendiente → confirmada → completada / cancelada / no_show`.
+- **Availability** — anti-overbooking: seats are validated against active table capacity per date/time slot.
+- **Client portal** (`/cuenta`) — view own reservations, cancel, profile.
+- **Admin panel** (`/admin`) — KPI dashboard, reservation management (filter, change status, assign table), table CRUD, menu CRUD.
 
----
+## Architecture
 
-## Files Overview
+```
+restaurant-reservations/
+├── backend/    Laravel 13 API  (http://localhost:8000)
+└── frontend/   Angular 21 SPA  (http://localhost:4200)
+```
 
-* **reservaController.php** – Handles form submissions and inserts reservations into the database.
-* **reservas.js** – Sends form data dynamically via POST and displays confirmation without page reload.
-* **index.php** – Loads views based on URL: reservation form, listings, or map.
-* **validarReserva.php** – Validates the form to prevent duplicate reservations.
+The Angular SPA calls the Laravel API over JSON with a Bearer token (added by an HTTP
+interceptor). CORS is restricted to the frontend origin (`FRONTEND_URL` in `backend/.env`).
 
-### Blade Templates
+### Demo accounts (seeded)
 
-* **layout.blade.php** – Main layout with header, navigation, content area, image gallery, and footer.
-* **listado.blade.php** – Shows all reservations in a table.
-* **mapa.blade.php** – Displays the restaurant location using Leaflet.
-* **reservas.blade.php** – Reservation form with modern styling and dynamic submission.
+| Role   | Email               | Password   |
+|--------|---------------------|------------|
+| Admin  | `admin@laguna.com`  | `password` |
+| Client | `cliente@laguna.com`| `password` |
+
+### API overview
+
+Public: `POST /api/register`, `POST /api/login`, `GET /api/menu`,
+`GET /api/disponibilidad?fecha&hora`, `POST /api/reservas`.
+
+Authenticated (`Bearer`): `GET /api/me`, `POST /api/logout`, `GET /api/mis-reservas`,
+`PATCH /api/reservas/{id}/cancelar`.
+
+Admin (`Bearer` + admin role): `GET /api/admin/dashboard`, `GET/PATCH /api/admin/reservas`,
+`apiResource /api/admin/{mesas,categorias,platos}`.
+
+## Setup
+
+### Database
+```sql
+CREATE DATABASE restaurante CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### Backend
+```bash
+cd backend
+composer install
+cp .env.example .env        # set DB_* and FRONTEND_URL
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve            # http://localhost:8000
+```
+
+### Frontend
+```bash
+cd frontend
+npm install --legacy-peer-deps
+npm start                    # http://localhost:4200
+```
+
+> If npm fails with `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, your network is intercepting TLS
+> (antivirus/proxy). Point Node at the proxy root CA:
+> `setx NODE_EXTRA_CA_CERTS "C:\path\to\root-ca.pem"`.
+
+## Production build (frontend)
+```bash
+cd frontend
+npm run build                # outputs to dist/frontend/browser
+```
+
+© Restaurante La Laguna — Jesxen

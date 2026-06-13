@@ -1,0 +1,62 @@
+<div class="min-h-screen flex flex-col bg-base-100 text-base-content">
+  <!-- Navbar -->
+  <header class="border-b border-base-300 bg-base-100/95 backdrop-blur sticky top-0 z-30">
+    <div class="navbar max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex-1">
+        <a routerLink="/" class="font-serif text-xl md:text-2xl font-semibold tracking-tight">
+          Restaurante La&nbsp;Laguna<span class="text-primary">.</span>
+        </a>
+      </div>
+
+      <nav class="flex items-center gap-1 sm:gap-2">
+        <a routerLink="/" routerLinkActive="text-primary" [routerLinkActiveOptions]="{ exact: true }"
+           class="btn btn-ghost btn-sm tracking-wide hidden sm:inline-flex">Inicio</a>
+        <a routerLink="/reservar"
+           class="btn btn-outline btn-sm border-primary text-primary hover:bg-primary hover:text-primary-content rounded-field tracking-wide">Reservar</a>
+
+        @if (!auth.isAuthenticated()) {
+          <a routerLink="/login" class="btn btn-ghost btn-sm tracking-wide">Entrar</a>
+        } @else {
+          <div class="dropdown dropdown-end">
+            <button tabindex="0" class="btn btn-ghost btn-sm gap-2">
+              <span class="avatar avatar-placeholder">
+                <span class="bg-neutral text-neutral-content w-7 rounded-full text-xs font-serif">
+                  {{ (auth.user()?.name || '?')[0] }}
+                </span>
+              </span>
+              <span class="hidden sm:inline tracking-wide">{{ auth.user()?.name }}</span>
+            </button>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-40 w-52 p-2 shadow-warm-lg border border-base-300 mt-2">
+              <li><a routerLink="/cuenta">Mi cuenta</a></li>
+              @if (auth.isAdmin()) { <li><a routerLink="/admin">Panel admin</a></li> }
+              <li><button (click)="logout()" class="text-error">Cerrar sesión</button></li>
+            </ul>
+          </div>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full">
+    <router-outlet />
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-accent text-accent-content">
+    <div class="max-w-6xl mx-auto px-6 py-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <p class="eyebrow !text-accent-content/60">San Cristóbal de La Laguna · Tenerife</p>
+          <p class="font-serif text-2xl font-semibold tracking-tight mt-1">Restaurante La Laguna<span class="text-primary">.</span></p>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-accent-content/70">
+          <a routerLink="/privacidad" class="hover:text-primary transition-colors">Privacidad</a>
+          <a routerLink="/terminos" class="hover:text-primary transition-colors">Términos</a>
+          <a routerLink="/contacto" class="hover:text-primary transition-colors">Contacto</a>
+        </div>
+      </div>
+      <div class="rule-gold opacity-30 my-6"></div>
+      <p class="text-xs text-accent-content/50">© {{ year }} Restaurante La Laguna — Jesxen. Cocina canaria de autor.</p>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,82 @@
+<p class="eyebrow">Configuración</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Ajustes del restaurante</h1>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="max-w-2xl space-y-6" novalidate>
+    <!-- General -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
+      <p class="font-serif text-lg font-medium mb-4">General</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label class="form-control sm:col-span-2">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Nombre del restaurante</span>
+          <input type="text" formControlName="nombre_restaurante"
+                 [class.input-error]="(form.controls.nombre_restaurante.touched && form.controls.nombre_restaurante.invalid) || errorsFor('nombre_restaurante').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @if (form.controls.nombre_restaurante.touched && form.controls.nombre_restaurante.invalid) { <p class="text-error text-xs mt-1">Mínimo 2 caracteres</p> }
+          @for (m of errorsFor('nombre_restaurante'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Aforo <span class="opacity-50 normal-case tracking-normal">(vacío = según mesas)</span></span>
+          <input type="number" min="1" formControlName="aforo"
+                 [class.input-error]="(form.controls.aforo.touched && form.controls.aforo.invalid) || errorsFor('aforo').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" placeholder="Auto" />
+          @if (form.controls.aforo.touched && form.controls.aforo.invalid) { <p class="text-error text-xs mt-1">Debe ser mayor que 0</p> }
+          @for (m of errorsFor('aforo'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Ticket medio (€)</span>
+          <input type="number" min="0" step="0.5" formControlName="ticket_medio"
+                 [class.input-error]="(form.controls.ticket_medio.touched && form.controls.ticket_medio.invalid) || errorsFor('ticket_medio').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @if (form.controls.ticket_medio.touched && form.controls.ticket_medio.invalid) { <p class="text-error text-xs mt-1">Valor no válido</p> }
+          @for (m of errorsFor('ticket_medio'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+      </div>
+    </div>
+
+    <!-- Horarios -->
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-6">
+      <p class="font-serif text-lg font-medium mb-4">Horarios y turnos</p>
+      <div class="grid grid-cols-2 gap-4">
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Comida · apertura</span>
+          <input type="time" formControlName="apertura_comida" class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('apertura_comida'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Comida · cierre</span>
+          <input type="time" formControlName="cierre_comida" class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('cierre_comida'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Cena · apertura</span>
+          <input type="time" formControlName="apertura_cena" class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('apertura_cena'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Cena · cierre</span>
+          <input type="time" formControlName="cierre_cena" class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" />
+          @for (m of errorsFor('cierre_cena'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+        <label class="form-control col-span-2">
+          <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Duración de turno (minutos)</span>
+          <input type="number" min="30" max="480" step="15" formControlName="duracion_turno"
+                 [class.input-error]="(form.controls.duracion_turno.touched && form.controls.duracion_turno.invalid) || errorsFor('duracion_turno').length"
+                 class="input w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+          @if (form.controls.duracion_turno.touched && form.controls.duracion_turno.invalid) { <p class="text-error text-xs mt-1">Entre 30 y 480 minutos</p> }
+          @for (m of errorsFor('duracion_turno'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        </label>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="btn btn-primary rounded-field tracking-wide shadow-warm" [disabled]="saving() || form.invalid">
+        @if (saving()) { <span class="loading loading-spinner loading-sm"></span> Guardando… }
+        @else { Guardar cambios }
+      </button>
+      @if (saved()) { <span class="text-success text-sm animate-fade-in">✓ Guardado</span> }
+    </div>
+  </form>
+}

@@ -1,0 +1,137 @@
+<div class="flex items-center justify-between gap-4 mb-6">
+  <div>
+    <p class="eyebrow">Gestión</p>
+    <h1 class="font-serif text-3xl font-semibold tracking-tight mt-1">Reservas</h1>
+  </div>
+  <button class="btn btn-outline btn-sm border-primary text-primary hover:bg-primary hover:text-primary-content rounded-field tracking-wide" (click)="exportCsv()">
+    ↓ Exportar CSV
+  </button>
+</div>
+
+<!-- Filtros -->
+<div class="flex flex-wrap items-end gap-3 mb-6">
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/55">Buscar</span>
+    <input type="text" class="input input-sm bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" [(ngModel)]="filtroQ" (keyup.enter)="load()" placeholder="Nombre o email…" />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/55">Fecha</span>
+    <input type="date" class="input input-sm bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" [(ngModel)]="filtroFecha" />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/55">Estado</span>
+    <select class="select select-sm bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none" [(ngModel)]="filtroEstado">
+      <option value="">Todos</option>
+      @for (e of estados; track e) { <option [value]="e">{{ label(e) }}</option> }
+    </select>
+  </label>
+  <button class="btn btn-primary btn-sm rounded-field tracking-wide" (click)="load()">Filtrar</button>
+  <button class="btn btn-ghost btn-sm tracking-wide" (click)="limpiar()">Limpiar</button>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else if (reservas().length === 0) {
+  <div class="rounded-box border border-base-300 bg-base-100 py-12 text-center text-base-content/60">No hay reservas con esos filtros.</div>
+} @else {
+  <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-warm">
+    <table class="table">
+      <thead>
+        <tr class="border-base-300">
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Cliente</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Fecha</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Hora</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60 text-right">Pers.</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Estado</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Mesa</th>
+          <th class="bg-base-200/60"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reservas(); track r.id) {
+          <tr class="border-base-200 hover:bg-base-200/50 transition-colors">
+            <td>
+              <div class="font-medium">{{ r.nombre }}</div>
+              <div class="text-xs text-base-content/50">{{ r.email }}</div>
+            </td>
+            <td class="tabular-nums text-base-content/75">{{ r.fecha }}</td>
+            <td class="tabular-nums text-base-content/75">{{ r.hora }}</td>
+            <td class="text-right tabular-nums">{{ r.personas }}</td>
+            <td>
+              <select class="select select-xs bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none" [value]="r.estado"
+                      (change)="cambiarEstado(r, $any($event.target).value)">
+                @for (e of estados; track e) { <option [value]="e">{{ label(e) }}</option> }
+              </select>
+            </td>
+            <td>
+              <select class="select select-xs bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none" [value]="r.mesa_id ?? ''"
+                      (change)="asignarMesa(r, $any($event.target).value)">
+                <option value="">—</option>
+                @for (m of mesas(); track m.id) {
+                  <option [value]="m.id">Mesa {{ m.numero }} ({{ m.capacidad }})</option>
+                }
+              </select>
+            </td>
+            <td class="text-right">
+              <button class="btn btn-ghost btn-xs text-primary" (click)="abrirDetalle(r)">Detalle</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Detail modal -->
+@if (detalle(); as d) {
+  <div class="modal modal-open">
+    <div class="modal-box bg-base-100 rounded-box shadow-warm-lg max-w-lg border border-base-300 animate-fade-in-up">
+      <div class="flex items-start justify-between mb-1">
+        <div>
+          <p class="eyebrow">Reserva #{{ d.id }}</p>
+          <h3 class="font-serif text-2xl font-medium">{{ d.nombre }}</h3>
+        </div>
+        <span class="badge badge-sm rounded-full {{ badge(d.estado) }}">{{ label(d.estado) }}</span>
+      </div>
+      <div class="rule-gold opacity-50 my-3"></div>
+
+      <dl class="grid grid-cols-2 gap-y-2 text-sm mb-4">
+        <dt class="text-base-content/55">Email</dt><dd class="text-right">{{ d.email }}</dd>
+        <dt class="text-base-content/55">Fecha · hora</dt><dd class="text-right tabular-nums">{{ d.fecha }} · {{ d.hora }}</dd>
+        <dt class="text-base-content/55">Personas</dt><dd class="text-right tabular-nums">{{ d.personas }}</dd>
+        <dt class="text-base-content/55">Mesa</dt><dd class="text-right">@if (d.mesa) { Mesa {{ d.mesa.numero }} } @else { Sin asignar }</dd>
+        @if (d.notas) { <dt class="text-base-content/55">Nota cliente</dt><dd class="text-right">"{{ d.notas }}"</dd> }
+      </dl>
+
+      <!-- Internal notes -->
+      <label class="form-control mb-4">
+        <span class="label-text mb-1.5 text-xs font-semibold uppercase tracking-wider text-base-content/60">Notas internas</span>
+        <textarea rows="2" class="textarea w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" [(ngModel)]="notasInternas" placeholder="Visible sólo para el equipo…"></textarea>
+        <button class="btn btn-primary btn-xs rounded-field tracking-wide mt-2 self-start" (click)="guardarNotas()">Guardar nota</button>
+      </label>
+
+      <!-- History -->
+      <p class="eyebrow mb-2">Historial</p>
+      @if (detalleLoading()) {
+        <span class="loading loading-spinner loading-sm text-primary"></span>
+      } @else if (d.eventos?.length) {
+        <ul class="space-y-2 text-sm border-l-2 border-base-300 pl-4">
+          @for (e of d.eventos; track e.id) {
+            <li>
+              <span class="text-base-content/55 tabular-nums text-xs">{{ e.created_at?.slice(0, 16)?.replace('T', ' ') }}</span><br />
+              <span class="text-base-content/70">{{ e.estado_anterior ?? '—' }} → <span class="text-primary font-medium">{{ e.estado_nuevo }}</span></span>
+              @if (e.usuario) { <span class="text-base-content/50">· {{ e.usuario }}</span> }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="text-sm text-base-content/50">Sin cambios de estado registrados.</p>
+      }
+
+      <div class="modal-action">
+        <button class="btn btn-ghost btn-sm tracking-wide" (click)="cerrarDetalle()">Cerrar</button>
+      </div>
+    </div>
+    <div class="modal-backdrop bg-neutral/40" (click)="cerrarDetalle()"></div>
+  </div>
+}

@@ -1,0 +1,105 @@
+<p class="eyebrow">Administración</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Usuarios</h1>
+
+@if (error()) {
+  <div class="alert alert-error rounded-box mb-5" role="alert"><span>{{ error() }}</span></div>
+}
+
+<!-- Crear usuario -->
+<div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-5 mb-6">
+  <p class="font-serif text-lg font-medium mb-3">Nuevo miembro del equipo</p>
+  <form [formGroup]="form" (ngSubmit)="crear()" novalidate>
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-2 items-start">
+      <div>
+        <input type="text" formControlName="name"
+               [class.input-error]="clientError('name') || errorsFor('name').length"
+               class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Nombre" />
+        @if (clientError('name'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        @for (m of errorsFor('name'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </div>
+      <div>
+        <input type="email" formControlName="email"
+               [class.input-error]="clientError('email') || errorsFor('email').length"
+               class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Email" />
+        @if (clientError('email'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        @for (m of errorsFor('email'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </div>
+      <div>
+        <input type="text" formControlName="phone"
+               [class.input-error]="clientError('phone') || errorsFor('phone').length"
+               class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Teléfono" />
+        @if (clientError('phone'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        @for (m of errorsFor('phone'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </div>
+      <select formControlName="role" class="select select-sm bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none">
+        <option value="staff">Staff</option>
+        <option value="admin">Admin</option>
+        <option value="client">Cliente</option>
+      </select>
+      <div>
+        <input type="password" formControlName="password"
+               [class.input-error]="clientError('password') || errorsFor('password').length"
+               class="input input-sm w-full bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" placeholder="Contraseña" />
+        @if (clientError('password'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+        @for (m of errorsFor('password'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+      </div>
+    </div>
+    <div class="mt-3">
+      <button type="submit" class="btn btn-primary btn-sm rounded-field tracking-wide" [disabled]="saving() || form.invalid">
+        @if (saving()) { <span class="loading loading-spinner loading-xs"></span> } @else { Crear usuario }
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Buscador -->
+<div class="flex items-end gap-3 mb-5">
+  <label class="form-control flex-1 max-w-xs">
+    <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/55">Buscar</span>
+    <input type="text" class="input input-sm bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40" [(ngModel)]="busqueda" (keyup.enter)="load()" placeholder="Nombre o email…" />
+  </label>
+  <button class="btn btn-primary btn-sm rounded-field tracking-wide" (click)="load()">Buscar</button>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else {
+  <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-warm">
+    <table class="table">
+      <thead>
+        <tr class="border-base-300">
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Usuario</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Rol</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60 text-right">Reservas</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60">Activo</th>
+          <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/60 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of usuarios(); track u.id) {
+          <tr class="border-base-200 hover:bg-base-200/50 transition-colors">
+            <td>
+              <div class="font-medium">{{ u.name }} @if (esYo(u)) { <span class="badge badge-xs badge-soft badge-primary ml-1">tú</span> }</div>
+              <div class="text-xs text-base-content/50">{{ u.email }}</div>
+            </td>
+            <td>
+              <select class="select select-xs bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none"
+                      [value]="u.role" (change)="cambiarRol(u, $any($event.target).value)" [disabled]="esYo(u)">
+                <option value="client">Cliente</option>
+                <option value="staff">Staff</option>
+                <option value="admin">Admin</option>
+              </select>
+            </td>
+            <td class="text-right tabular-nums">{{ u.reservas_count ?? 0 }}</td>
+            <td>
+              <input type="checkbox" class="toggle toggle-primary toggle-sm" [checked]="u.activo" (change)="toggleActivo(u)" [disabled]="esYo(u)" />
+            </td>
+            <td class="text-right">
+              <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" (click)="eliminar(u)" [disabled]="esYo(u)">Eliminar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

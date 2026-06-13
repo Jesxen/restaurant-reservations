@@ -1,0 +1,9 @@
+# Local tooling / editor config — not part of the project
+.agents/
+.claude/
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

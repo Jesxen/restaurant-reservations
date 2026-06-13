@@ -1,0 +1,59 @@
+<p class="eyebrow">Sala</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-6">Mesas</h1>
+
+<!-- Crear mesa -->
+<div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-5 mb-8">
+  <p class="font-serif text-lg font-medium mb-3">Añadir mesa</p>
+  @if (errorsFor('general').length) {
+    <div class="alert alert-error rounded-field py-2 mb-3" role="alert"><span>{{ errorsFor('general')[0] }}</span></div>
+  }
+  <form [formGroup]="form" (ngSubmit)="crear()" class="flex flex-wrap items-start gap-3" novalidate>
+    <label class="form-control">
+      <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/55">Número</span>
+      <input type="number" min="1" formControlName="numero"
+             [class.input-error]="(form.controls.numero.touched && form.controls.numero.invalid) || errorsFor('numero').length"
+             class="input input-sm w-28 bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" placeholder="Nº" />
+      @if (form.controls.numero.touched && form.controls.numero.invalid) { <p class="text-error text-xs mt-1">Campo obligatorio</p> }
+      @for (m of errorsFor('numero'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/55">Capacidad</span>
+      <input type="number" min="1" max="50" formControlName="capacidad"
+             [class.input-error]="(form.controls.capacidad.touched && form.controls.capacidad.invalid) || errorsFor('capacidad').length"
+             class="input input-sm w-28 bg-base-100 border-base-300 rounded-field focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40 tabular-nums" />
+      @if (form.controls.capacidad.touched && form.controls.capacidad.invalid) { <p class="text-error text-xs mt-1">Entre 1 y 50</p> }
+      @for (m of errorsFor('capacidad'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+    </label>
+    <button type="submit" class="btn btn-primary btn-sm rounded-field tracking-wide mt-[1.55rem]" [disabled]="saving() || form.invalid">
+      @if (saving()) { <span class="loading loading-spinner loading-xs"></span> } @else { Añadir }
+    </button>
+  </form>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else {
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    @for (m of mesas(); track m.id) {
+      <div class="rounded-box border border-base-300 bg-base-100 shadow-warm p-5 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="eyebrow">Mesa</p>
+            <p class="font-serif text-4xl font-semibold tabular-nums leading-none mt-1">{{ m.numero }}</p>
+          </div>
+          @if (m.activa) { <span class="badge badge-sm badge-soft badge-success rounded-full">Activa</span> }
+          @else { <span class="badge badge-sm badge-soft badge-neutral rounded-full">Inactiva</span> }
+        </div>
+        <p class="text-sm text-base-content/60">{{ m.capacidad }} comensales</p>
+        <div class="rule-gold opacity-40 my-1"></div>
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="toggle toggle-primary toggle-sm" [checked]="m.activa" (change)="toggleActiva(m)" />
+            <span class="text-xs text-base-content/60">{{ m.activa ? 'Activa' : 'Inactiva' }}</span>
+          </label>
+          <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" (click)="eliminar(m)">Eliminar</button>
+        </div>
+      </div>
+    }
+  </div>
+}

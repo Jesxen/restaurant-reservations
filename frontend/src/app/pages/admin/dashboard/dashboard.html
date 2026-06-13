@@ -1,0 +1,90 @@
+<p class="eyebrow">Resumen</p>
+<h1 class="font-serif text-3xl font-semibold tracking-tight mt-1 mb-8">Dashboard</h1>
+
+@if (loading()) {
+  <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else if (data(); as d) {
+  <!-- KPIs -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Reservas hoy</p>
+      <p class="font-serif text-4xl font-semibold tabular-nums mt-2">{{ d.reservas_hoy }}</p>
+      <div class="rule-gold mt-4 opacity-60"></div>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Comensales hoy</p>
+      <p class="font-serif text-4xl font-semibold tabular-nums mt-2">{{ d.comensales_hoy }}</p>
+      <div class="rule-gold mt-4 opacity-60"></div>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Ocupación hoy</p>
+      <p class="font-serif text-4xl font-semibold tabular-nums mt-2">{{ d.ocupacion_hoy }}%</p>
+      <p class="text-xs text-base-content/55 mt-1">de {{ d.capacidad_total }} plazas</p>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Pendientes</p>
+      <p class="font-serif text-4xl font-semibold tabular-nums mt-2 text-secondary">{{ d.pendientes }}</p>
+      <div class="rule-gold mt-4 opacity-60"></div>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Ingresos estimados hoy</p>
+      <p class="font-serif text-4xl font-semibold tabular-nums mt-2 text-primary">{{ d.ingresos_estimados_hoy.toFixed(0) }} €</p>
+      <p class="text-xs text-base-content/55 mt-1">ticket medio {{ d.ticket_medio.toFixed(0) }} €</p>
+    </div>
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Tasa de cancelación</p>
+      <p class="font-serif text-4xl font-semibold tabular-nums mt-2">{{ d.tasa_cancelacion }}%</p>
+      <div class="rule-gold mt-4 opacity-60"></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Próximos 7 días -->
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Próximos 7 días</p>
+      <h2 class="font-serif text-xl font-medium mt-1 mb-5">Reservas previstas</h2>
+      <div class="flex items-end justify-between gap-3 h-44 border-b border-base-300 pb-px">
+        @for (p of data()!.proximos_dias; track p.fecha) {
+          <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+            <span class="text-xs font-semibold tabular-nums">{{ p.reservas }}</span>
+            <div class="w-full rounded-t bg-primary/85 hover:bg-primary transition-colors" [style.height]="barHeight(p.reservas)" [title]="p.reservas + ' reservas'"></div>
+            <span class="text-[10px] text-base-content/50 tabular-nums">{{ p.fecha.slice(5) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Por estado -->
+    <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm">
+      <p class="eyebrow">Distribución</p>
+      <h2 class="font-serif text-xl font-medium mt-1 mb-5">Reservas por estado</h2>
+      <ul class="space-y-3">
+        @for (e of estados; track e) {
+          <li class="flex items-center gap-3">
+            <span class="badge badge-sm rounded-full {{ badge(e) }} w-28 justify-start">{{ label(e) }}</span>
+            <span class="font-serif text-lg font-semibold tabular-nums">{{ estadoTotal(e) }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <!-- Ocupación por franja -->
+  <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-warm mt-6">
+    <p class="eyebrow">Ocupación por franja</p>
+    <h2 class="font-serif text-xl font-medium mt-1 mb-5">Comensales por hora (próximas reservas)</h2>
+    @if (d.por_franja.length === 0) {
+      <p class="text-sm text-base-content/50">Sin reservas próximas.</p>
+    } @else {
+      <div class="flex items-end gap-2 h-40 border-b border-base-300 pb-px overflow-x-auto">
+        @for (f of d.por_franja; track f.hora) {
+          <div class="flex flex-col items-center gap-2 h-full justify-end min-w-10 flex-1">
+            <span class="text-xs font-semibold tabular-nums">{{ f.comensales }}</span>
+            <div class="w-full rounded-t bg-secondary/80 hover:bg-secondary transition-colors" [style.height]="franjaHeight(f.comensales)"></div>
+            <span class="text-[10px] text-base-content/50 tabular-nums">{{ f.hora }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

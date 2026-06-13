@@ -1,0 +1,86 @@
+<div class="max-w-5xl mx-auto px-6 py-16">
+  <p class="eyebrow">Hablemos</p>
+  <h1 class="font-serif text-4xl font-semibold tracking-tight mt-1">Contacto</h1>
+  <div class="rule-gold w-24 my-6"></div>
+  <p class="text-base-content/60 max-w-2xl mb-12">¿Tienes una duda, una celebración especial o quieres
+    reservar para un grupo grande? Escríbenos y te respondemos lo antes posible.</p>
+
+  <div class="grid md:grid-cols-2 gap-10">
+    <!-- Datos -->
+    <div class="space-y-6">
+      <div class="flex items-start gap-4">
+        <span class="text-primary text-xl">📍</span>
+        <div>
+          <p class="font-medium">Dirección</p>
+          <p class="text-base-content/70 text-sm">{{ direccion }}</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4">
+        <span class="text-primary text-xl">📞</span>
+        <div>
+          <p class="font-medium">Teléfono</p>
+          <a [href]="'tel:' + telefono" class="text-base-content/70 text-sm hover:text-primary">{{ telefono }}</a>
+        </div>
+      </div>
+      <div class="flex items-start gap-4">
+        <span class="text-primary text-xl">✉️</span>
+        <div>
+          <p class="font-medium">Email</p>
+          <a [href]="'mailto:' + email" class="text-base-content/70 text-sm hover:text-primary">{{ email }}</a>
+        </div>
+      </div>
+      <div class="flex items-start gap-4">
+        <span class="text-primary text-xl">🕐</span>
+        <div>
+          <p class="font-medium">Horario</p>
+          <p class="text-base-content/70 text-sm">{{ horario }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="rounded-box border border-base-300 bg-base-200 p-6 shadow-warm">
+      @if (enviado()) {
+        <div class="text-center py-10">
+          <p class="text-2xl mb-2">✅</p>
+          <p class="font-serif text-xl">¡Gracias!</p>
+          <p class="text-base-content/60 text-sm mt-2">Hemos recibido tu mensaje. Te responderemos lo antes posible.</p>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="enviar()" class="space-y-4" novalidate>
+          @if (error()) {
+            <div class="alert alert-error text-sm rounded-field py-2" role="alert">{{ error() }}</div>
+          }
+          <div>
+            <label class="block text-sm font-medium mb-1" for="nombre">Nombre</label>
+            <input id="nombre" formControlName="nombre"
+                   [class.input-error]="clientError('nombre') || errorsFor('nombre').length"
+                   class="input input-bordered w-full rounded-field" placeholder="Tu nombre" />
+            @if (clientError('nombre'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+            @for (m of errorsFor('nombre'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="remitente">Email</label>
+            <input id="remitente" type="email" formControlName="email"
+                   [class.input-error]="clientError('email') || errorsFor('email').length"
+                   class="input input-bordered w-full rounded-field" placeholder="tucorreo@ejemplo.com" />
+            @if (clientError('email'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+            @for (m of errorsFor('email'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="mensaje">Mensaje</label>
+            <textarea id="mensaje" formControlName="mensaje" rows="4"
+                      [class.textarea-error]="clientError('mensaje') || errorsFor('mensaje').length"
+                      class="textarea textarea-bordered w-full rounded-field" placeholder="¿En qué podemos ayudarte?"></textarea>
+            @if (clientError('mensaje'); as m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+            @for (m of errorsFor('mensaje'); track m) { <p class="text-error text-xs mt-1">{{ m }}</p> }
+          </div>
+          <button type="submit" [disabled]="enviando() || form.invalid"
+                  class="btn btn-primary w-full rounded-field tracking-wide shadow-warm">
+            @if (enviando()) { <span class="loading loading-spinner loading-sm"></span> } @else { Enviar mensaje }
+          </button>
+        </form>
+      }
+    </div>
+  </div>
+</div>
