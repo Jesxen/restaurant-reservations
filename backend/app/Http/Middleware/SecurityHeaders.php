@@ -23,6 +23,8 @@ class SecurityHeaders
             // avoid known side-channel issues. CSP is the real defence.
             'X-XSS-Protection' => '0',
             'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
+            // Force HTTPS for a year (Railway terminates TLS). Harmless over http.
+            'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains',
         ];
 
         foreach ($headers as $name => $value) {

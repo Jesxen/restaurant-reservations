@@ -27,13 +27,18 @@ class DatabaseSeeder extends Seeder
         // singleton below is the only one.
         Setting::query()->delete();
 
+        // Demo passwords. Default to "password" for the public portfolio demo,
+        // but allow hardening privileged accounts via env on a real deployment.
+        $demoPass = env('DEMO_PASSWORD', 'password');
+        $adminPass = env('ADMIN_SEED_PASSWORD', $demoPass);
+
         // --- Users ---------------------------------------------------------
         $admin = User::create([
             'name' => 'Administrador',
             'email' => 'admin@laguna.com',
             'phone' => '+34 600 000 001',
             'role' => 'admin',
-            'password' => 'password',
+            'password' => $adminPass,
         ]);
 
         User::create([
@@ -41,7 +46,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'staff@laguna.com',
             'phone' => '+34 600 000 003',
             'role' => 'staff',
-            'password' => 'password',
+            'password' => $adminPass,
         ]);
 
         $cliente = User::create([
@@ -49,7 +54,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'cliente@laguna.com',
             'phone' => '+34 600 000 002',
             'role' => 'client',
-            'password' => 'password',
+            'password' => $demoPass,
         ]);
 
         User::factory(6)->create();

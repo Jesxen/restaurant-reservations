@@ -10,13 +10,16 @@ use App\Mail\ReservaRecibida;
 use App\Models\Reserva;
 use App\Models\ReservaEvento;
 use App\Models\Setting;
+use App\Services\AvailabilityService;
 use App\Services\StripeService;
 use App\Services\WaitlistService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class ReservaController extends Controller
@@ -58,7 +61,24 @@ class ReservaController extends Controller
             $data['deposito_estado'] = 'no_aplica';
         }
 
-        $reserva = Reserva::create($data);
+        // Create inside a transaction with a locked capacity re-check. The
+        // FormRequest already validated availability, but two concurrent requests
+        // for the last seats could both pass that check; locking the date's active
+        // rows here serialises them and prevents overbooking.
+        $reserva = DB::transaction(function () use ($data) {
+            $left = app(AvailabilityService::class)
+                ->seatsLeft($data['fecha'], $data['hora'], null, lock: true);
+
+            if ((int) $data['personas'] > $left) {
+                throw ValidationException::withMessages([
+                    'personas' => $left > 0
+                        ? "Sólo quedan {$left} plazas para esa fecha y hora."
+                        : 'No hay disponibilidad para esa fecha y hora.',
+                ]);
+            }
+
+            return Reserva::create($data);
+        });
 
         // Attempt to create the Stripe PaymentIntent. If Stripe errors at this
         // point, fall back to a no-deposit reservation rather than failing the
@@ -79,11 +99,20 @@ class ReservaController extends Controller
             }
         }
 
-        // Confirmation to the customer.
-        Mail::to($reserva->email)->send(new ReservaRecibida($reserva));
+        // Notifications are best-effort: a mail transport failure must not 500 a
+        // reservation that was already saved.
+        try {
+            // Confirmation to the customer.
+            Mail::to($reserva->email)->send(new ReservaRecibida($reserva));
 
-        // Internal notification to the restaurant inbox.
-        Mail::to(config('mail.contact_to'))->send(new NuevaReservaAdmin($reserva));
+            // Internal notification to the restaurant inbox.
+            Mail::to(config('mail.contact_to'))->send(new NuevaReservaAdmin($reserva));
+        } catch (Throwable $e) {
+            Log::warning('No se pudieron enviar los correos de la reserva; la reserva se guardó igualmente.', [
+                'reserva_id' => $reserva->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return (new ReservaResource($reserva))
             ->additional([

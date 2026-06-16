@@ -21,8 +21,10 @@ return [
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4200')],
 
-    // Allow Vercel preview/production deployments (each deploy gets a unique subdomain).
-    'allowed_origins_patterns' => ['#^https://restaurant-reservations-.*\.vercel\.app$#'],
+    // Allow this project's Vercel preview deployments. The trailing scope segment
+    // (`-jesxen-s-projects`) is unique to the account, so other Vercel users can't
+    // craft a matching origin. The stable production domain is set via FRONTEND_URL.
+    'allowed_origins_patterns' => ['#^https://restaurant-reservations-[a-z0-9-]+-jesxen-s-projects\.vercel\.app$#'],
 
     'allowed_headers' => ['*'],
 

@@ -88,7 +88,8 @@ export class AuthService {
     this._user.set(res.user);
   }
 
-  private clearSession(): void {
+  /** Clear local session state (used on logout and on a 401 from the API). */
+  clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     this._token.set(null);
     this._user.set(null);

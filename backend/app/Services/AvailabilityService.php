@@ -36,7 +36,7 @@ class AvailabilityService
      *
      * Optionally ignore one reservation (e.g. when editing it).
      */
-    public function seatsTaken(string $fecha, string $hora, ?int $ignoreReservaId = null): int
+    public function seatsTaken(string $fecha, string $hora, ?int $ignoreReservaId = null, bool $lock = false): int
     {
         $duracion = (int) Setting::current()->duracion_turno;
         $inicio = $this->aMinutos($hora);
@@ -46,6 +46,9 @@ class AvailabilityService
             ->whereDate('fecha', $fecha)
             ->whereIn('estado', Reserva::ESTADOS_ACTIVOS)
             ->when($ignoreReservaId, fn ($q) => $q->where('id', '!=', $ignoreReservaId))
+            // Inside a transaction, lock the matching rows so a concurrent booking
+            // for the same date can't pass its capacity check at the same time.
+            ->when($lock, fn ($q) => $q->lockForUpdate())
             ->get(['hora', 'personas'])
             ->filter(function (Reserva $r) use ($inicio, $fin, $duracion) {
                 $rInicio = $this->aMinutos((string) $r->hora);
@@ -60,9 +63,9 @@ class AvailabilityService
     /**
      * Seats still available in the slot starting at $hora.
      */
-    public function seatsLeft(string $fecha, string $hora, ?int $ignoreReservaId = null): int
+    public function seatsLeft(string $fecha, string $hora, ?int $ignoreReservaId = null, bool $lock = false): int
     {
-        return max(0, $this->totalCapacity() - $this->seatsTaken($fecha, $hora, $ignoreReservaId));
+        return max(0, $this->totalCapacity() - $this->seatsTaken($fecha, $hora, $ignoreReservaId, $lock));
     }
 
     /**

@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Daily reminder emails for next-day reservations.
 Schedule::command('reservas:recordatorios')->dailyAt('10:00');
+
+// Purge access tokens that expired more than a day ago so the table stays small.
+Schedule::command('sanctum:prune-expired --hours=24')->daily();
