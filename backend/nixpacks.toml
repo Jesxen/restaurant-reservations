@@ -2,4 +2,4 @@
 # Nixpacks auto-detects PHP from composer.json and runs `composer install`.
 # We only override the start command: run migrations, then serve on $PORT.
 [start]
-cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+cmd = "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"

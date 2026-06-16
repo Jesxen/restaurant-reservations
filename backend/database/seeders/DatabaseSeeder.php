@@ -16,6 +16,17 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Idempotent: only seed an empty database. Lets the deploy run
+        // `db:seed` on every boot without duplicating data or overwriting
+        // changes made later from the admin panel.
+        if (User::query()->exists()) {
+            return;
+        }
+
+        // Remove any partial settings row created by migrations so the
+        // singleton below is the only one.
+        Setting::query()->delete();
+
         // --- Users ---------------------------------------------------------
         $admin = User::create([
             'name' => 'Administrador',
