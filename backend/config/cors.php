@@ -21,7 +21,8 @@ return [
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4200')],
 
-    'allowed_origins_patterns' => [],
+    // Allow Vercel preview/production deployments (each deploy gets a unique subdomain).
+    'allowed_origins_patterns' => ['#^https://restaurant-reservations-.*\.vercel\.app$#'],
 
     'allowed_headers' => ['*'],
 
