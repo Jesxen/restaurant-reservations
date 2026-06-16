@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, firstValueFrom, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
@@ -15,6 +16,7 @@ const TOKEN_KEY = 'rl_token';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly api = environment.apiUrl;
 
   private readonly _user = signal<User | null>(null);
@@ -76,10 +78,13 @@ export class AuthService {
   }
 
   logout(): void {
-    this.http.post(`${this.api}/logout`, {}).subscribe({
-      next: () => this.clearSession(),
-      error: () => this.clearSession(),
-    });
+    // Clear local state first so protected views stop showing account data
+    // immediately, then redirect away from any guarded page.
+    const done = () => {
+      this.clearSession();
+      this.router.navigate(['/']);
+    };
+    this.http.post(`${this.api}/logout`, {}).subscribe({ next: done, error: done });
   }
 
   private setSession(res: AuthResponse): void {
