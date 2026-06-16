@@ -58,7 +58,7 @@ class ReviewTest extends TestCase
             ->assertUnauthorized();
     }
 
-    public function test_eligible_client_can_submit_review_published(): void
+    public function test_eligible_client_can_submit_review_pending_moderation(): void
     {
         $client = User::factory()->create(['role' => 'client', 'name' => 'Lucía']);
         $reserva = Reserva::factory()->create(['user_id' => $client->id, 'estado' => 'completada']);
@@ -74,7 +74,7 @@ class ReviewTest extends TestCase
             'user_id' => $client->id,
             'reserva_id' => $reserva->id,
             'rating' => 5,
-            'aprobada' => true,
+            'aprobada' => false,
         ]);
     }
 

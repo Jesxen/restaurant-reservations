@@ -50,11 +50,11 @@ class ReviewController extends Controller
             'nombre' => $user->name,
             'rating' => $request->integer('rating'),
             'comentario' => $request->string('comentario'),
-            'aprobada' => true,
+            'aprobada' => false,
         ]);
 
         return (new ReviewResource($review))
-            ->additional(['message' => '¡Gracias por tu reseña!'])
+            ->additional(['message' => '¡Gracias por tu reseña! La revisaremos antes de publicarla.'])
             ->response()
             ->setStatusCode(201);
     }
