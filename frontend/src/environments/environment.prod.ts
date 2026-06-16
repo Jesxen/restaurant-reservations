@@ -3,5 +3,5 @@
 // Set apiUrl to your deployed backend, e.g. https://restaurante-api.up.railway.app/api
 export const environment = {
   production: true,
-  apiUrl: 'https://REPLACE-WITH-BACKEND-URL/api',
+  apiUrl: 'https://restaurant-reservations-production-abcd.up.railway.app/api',
 };
