@@ -19,7 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4200')],
+    'allowed_origins' => array_values(array_filter([
+        env('FRONTEND_URL', 'http://localhost:4200'),
+        // Stable Vercel production domain for this project.
+        'https://restaurant-reservations-rho.vercel.app',
+    ])),
 
     // Allow this project's Vercel preview deployments. The trailing scope segment
     // (`-jesxen-s-projects`) is unique to the account, so other Vercel users can't
